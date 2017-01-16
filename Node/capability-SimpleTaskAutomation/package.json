@@ -1,0 +1,26 @@
+{
+  "name": "simple-task-automation",
+  "version": "1.0.0",
+  "description": "Bot Build Sample - Simple Task Automation",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "botbuilder": "^3.5.3",
+    "guid": "^0.0.12",
+    "restify": "^4.3.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.13.1",
+    "eslint-config-google": "^0.7.1",
+    "eslint-config-standard": "^6.2.1",
+    "eslint-plugin-promise": "^3.4.0",
+    "eslint-plugin-standard": "^2.0.1"
+  },
+  "keywords": [
+    "bot"
+  ]
+}
