@@ -1,5 +1,5 @@
 var builder = require('botbuilder');
-var guid = require('guid');
+const uuid = require('uuid');
 
 const library = new builder.Library('resetPassword');
 
@@ -13,28 +13,34 @@ library.dialog('/', [
     },
     function (session, args) {
         if (args.resumed) {
-            session.endDialog('You have tried to enter your phone number many times. Please try again later.');
-            session.reset();
-        } else {
-            session.send('The phone you provided is: ' + args.response);
-            session.dialogData.phoneNumber = args.response;
-            builder.Prompts.time(session, 'Please enter your date of birth (MM/dd/yyyy):', {
-                retryPrompt: 'The value you entered is not a valid date. Please try again:',
-                maxRetries: 2
-            });
+            session.send('You have tried to enter your phone number many times. Please try again later.');
+            session.endDialogWithResult({ resumed: builder.ResumeReason.notCompleted });
+            return;
         }
+
+        session.dialogData.phoneNumber = args.response;
+        session.send('The phone you provided is: ' + args.response);
+
+        builder.Prompts.time(session, 'Please enter your date of birth (MM/dd/yyyy):', {
+            retryPrompt: 'The value you entered is not a valid date. Please try again:',
+            maxRetries: 2
+        });
     },
     function (session, args) {
         if (args.resumed) {
-            session.cancelDialog('You have tried to enter your date of birth many times. Please try again later.');
-            session.reset();
-        } else {        
-            session.send('The date of birth you provided is: ' + args.response.entity);
-
-            var newPassword = guid.create();
-            session.endDialog('Thanks! Your new password is _' + newPassword.value + '_');
+            session.send('You have tried to enter your date of birth many times. Please try again later.');
+            session.endDialogWithResult({ resumed: builder.ResumeReason.notCompleted });
+            return;
         }
+
+        session.send('The date of birth you provided is: ' + args.response.entity);
+
+        var newPassword = uuid.v1();
+        session.send('Thanks! Your new password is _' + newPassword + '_');
+
+        session.endDialogWithResult({ resumed: builder.ResumeReason.completed });
     }
-]).reloadAction('cancel', null, { matches: /^cancel/i });
+])
+    .cancelAction('cancel', null, { matches: /^cancel/i });
 
 module.exports = library;

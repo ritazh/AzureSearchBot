@@ -16,30 +16,35 @@ var connector = new builder.ChatConnector({
 const ChangePasswordOption = 'Change Password';
 const ResetPasswordOption = 'Reset Password';
 
-var bot = new builder.UniversalBot(connector, [function (session) {
-    builder.Prompts.choice(session, 
-        'What do yo want to do today?',
-        [ChangePasswordOption, ResetPasswordOption]);
+var bot = new builder.UniversalBot(connector, [
+    function (session) {
+        builder.Prompts.choice(session,
+            'What do yo want to do today?',
+            [ChangePasswordOption, ResetPasswordOption],
+            { listStyle: builder.ListStyle.button });
     },
     function (session, result) {
         if (result.response) {
-            switch(result.response.entity) {
+            switch (result.response.entity) {
                 case ChangePasswordOption:
                     session.send('This functionality is not yet implemented! Try resetting your password.');
+                    session.reset();
                     break;
                 case ResetPasswordOption:
                     session.beginDialog('resetPassword:/');
                     break;
             }
         } else {
-            session.send('Didn\'t understand what you mean.');
+            session.send('I am sorry but I didn\'t understand that. I need you to select one of the options below');
+        }
+    },
+    function (session, result) {
+        if (result.resume) {
+            session.send('You identity was not verified and your password cannot be reset');
+            session.reset();
         }
     }
 ]);
-
-bot.set('persistUserData', true);
-
-//bot.reloadAction('cancel', null, { matches: /^cancel/i });
 
 //Sub-Dialogs
 bot.library(require('./dialogs/reset-password'));
