@@ -36,7 +36,7 @@
         private async Task SendWelcomeMessageAsync(IDialogContext context)
         {
             /* IDialogContext.PostAsync posts a message to the user in the conversation. */
-            await context.PostAsync("Hi, I'm the ConversationFlow bot. Let's get started.");
+            await context.PostAsync("Hi, I'm the Basic Multi Dialog bot. Let's get started.");
 
             /* IDialogContext.Call() calls the dialog passed as a paramter and adds it to the top of the stack. Messages 
                 sent from the user will be received by the dialog at the top of the stack until it is removed
