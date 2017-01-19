@@ -1,6 +1,6 @@
 # Simple Task Automation Bot Sample
 
-A sample bot showing how to do simple task automation scenarios
+A sample bot showing how to do simple task automation scenarios.
 
 ### Prerequisites
 
@@ -86,11 +86,50 @@ private async Task AfterChoiceSelected(IDialogContext context, IAwaitable<string
 }
 ````
 
+The [`ResetPasswordDialog`](Dialogs/ResetPassword.cs) uses a set of custom Prompts dialogs (classes inheriting from `Prompt<T,U>`) to ask the user for her phone number and her date of birth and validate their input. Prompts implement a retry mechanish and after X attemps they throw a `TooManyAttempsException`. Dialog exceptions can be handled in the `ResumeAfter<T>` delegate passed to the `Call` method
+
+
+
+Once the child dialog finishes the `IDialogContext.Done()` should be called to complete the current dialog and return a result to the parent dialog. 
+
+The sample shows how to handle dialog exceptions by awaiting the result argument within a `try/catch` block and how the  [`ResetPasswordDialog`](Dialogs/ResetPassword.cs#L68) uses `context.Done()` to return if the reset operation was successful or not to the parent dialog
+
+````C#
+private async Task AfterDateOfBirthEntered(IDialogContext context, IAwaitable<DateTime> result)
+{
+    try
+    {
+        var dateOfBirth = await result;
+
+        if (dateOfBirth != DateTime.MinValue)
+        {
+            await context.PostAsync($"The date of birth you provided is: {dateOfBirth.ToShortDateString()}");
+
+            // Add your custom reset password logic here.
+            var newPassword = Guid.NewGuid().ToString().Replace("-", string.Empty);
+
+            await context.PostAsync($"Thanks! Your new password is _{newPassword}_");
+
+            context.Done(true);
+        }
+        else
+        {
+            context.Done(false);
+        }
+    }
+    catch (TooManyAttemptsException)
+    {
+        context.Done(false);
+    }
+}
+````
+
+
 ### Outcome
 
 You will see the following result in the Bot Framework Emulator when opening and running the sample solution.
 
-![Sample Outcome](images/outcome-emulator.png)
+![Sample Outcome](images/outcome.png)
 
 ### More Information
 
