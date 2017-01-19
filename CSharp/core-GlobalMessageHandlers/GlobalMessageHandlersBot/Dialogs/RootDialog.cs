@@ -9,7 +9,6 @@
     [Serializable]
     public class RootDialog : IDialog<object>
     {
-
         private string name;
         private string city;
 
@@ -27,7 +26,7 @@
 
         private async Task SendWelcomeMessageAsync(IDialogContext context)
         {
-            await context.PostAsync("Hi, I'm the Basic Multi Dialog bot. Let's get started.");
+            await context.PostAsync("Hi, I'm the Global Message Handlers bot. Let's get started.");
 
             context.Call(new NameDialog(), this.NameDialogResumeAfter);
         }
@@ -36,7 +35,6 @@
         {
             try
             {
-
                 this.name = await result;
 
                 context.Call(new CityDialog(this.name), this.CityDialogResumeAfter);
