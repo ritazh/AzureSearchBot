@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Globalization;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Bot.Connector;
+using Newtonsoft.Json;
 
 namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
 {
@@ -26,8 +26,11 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
         private static EventTelemetry BuildEventTelemetry(IActivity activity)
         {
             var et = new EventTelemetry();
-            et.Properties.Add("timestamp", DateTime.UtcNow.ToString(CultureInfo.InvariantCulture));
+            // TODO: check with Mor if we really need timestamp becaue it is already in the message
+            if (activity.Timestamp != null) et.Properties.Add("timestamp", GetDateTimeAsIso8601(activity.Timestamp.Value));
             et.Properties.Add("type", activity.Type);
+            // TODO: Mor seems to be logging channel for intents, not for messages.
+            et.Properties.Add("channel", activity.ChannelId);
 
             switch (activity.Type)
             {
@@ -48,6 +51,12 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
                     break;
             }
             return et;
+        }
+
+        private static string GetDateTimeAsIso8601(DateTime activity)
+        {
+            var s = JsonConvert.SerializeObject(activity.ToUniversalTime());
+            return s.Substring(1, s.Length - 2);
         }
     }
 }
