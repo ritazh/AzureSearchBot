@@ -8,7 +8,7 @@ using Microsoft.Bot.Connector;
 
 namespace ConversationFlow.Dialogs
 {
-    /* All implementations of IDialog must be serializable so the converstation state (the dialog stack) can be 
+    /* All implementations of IDialog must be serializable so the conversation state (the dialog stack) can be 
         serialized when the bot is waiting for the user to respond. */
     [Serializable]
     /* All implementations of IDialog are defined with a type for the type of value they return when complete. */
@@ -25,7 +25,7 @@ namespace ConversationFlow.Dialogs
         {
             var message = await result;
 
-            /* Have logic in your dialog to parse the response to see if it's a valid reslt for the dialog 
+            /* Have logic in your dialog to parse the response to see if it's a valid result for the dialog 
                 to return. What if the user replied with an image attached? */
             if (message.Text.Trim().Length > 0)
             {
