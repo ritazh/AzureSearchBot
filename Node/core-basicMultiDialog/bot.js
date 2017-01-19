@@ -69,7 +69,7 @@ bot.dialog('/getName', [
             if (session.dialogData.didReprompt) {
                 // Re-prompt ocurred
                 // Send back empty string
-                session.endDialog({ response: '' });
+                session.endDialogWithResult({ response: '' });
             } else {
                 // Set the flag
                 session.dialogData.didReprompt = true;
@@ -99,7 +99,7 @@ bot.dialog('/getCity', [
             if (session.dialogData.didReprompt) {
                 // Re-prompt ocurred
                 // Send back empty string
-                session.endDialog({ response: '' });
+                session.endDialogWithResult({ response: '' });
             } else {
                 // Set the flag
                 session.dialogData.didReprompt = true;
