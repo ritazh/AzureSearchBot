@@ -158,6 +158,10 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Telemetry\BatchInput.cs" />
+    <Compile Include="Telemetry\BatchResult.cs" />
+    <Compile Include="Telemetry\DocumentInput.cs" />
+    <Compile Include="Telemetry\DocumentResult.cs" />
     <Compile Include="Telemetry\InstrumentedLuis.cs" />
     <Compile Include="Telemetry\DialogActivityLogger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
