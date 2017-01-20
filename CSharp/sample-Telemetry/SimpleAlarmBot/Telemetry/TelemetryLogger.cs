@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -40,6 +41,28 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
         {
             var et = BuildEventTelemetry(activity);
             TelemetryClient.TrackEvent(et);
+            // Track sentiment only for incoming messages. 
+            if (et.Name == _messageReceived)
+            {
+                TrackMessageSentiment(activity);
+            }
+        }
+
+        private static void TrackMessageSentiment(IActivity activity)
+        {
+            var text = activity.AsMessageActivity().Text;
+            var numWords = text.Split(' ').Length;
+            if (numWords >= int.Parse(_textAnalyticsMinLength) && _textAnalyticsApiKey != string.Empty)
+            {
+                var properties = new Dictionary<string, string>
+                {
+                    {"score", GetSentimentScore(text).ToString(CultureInfo.InvariantCulture)}
+                };
+
+                var et = BuildEventTelemetry(activity, properties);
+                et.Name = _messageSentiment;
+                TelemetryClient.TrackEvent(et);
+            }
         }
 
         /// <summary>
@@ -136,22 +159,17 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
             return s.Substring(1, s.Length - 2);
         }
 
-        private static double GetSentimentScore(LuisResult result)
+        private static double GetSentimentScore(string message)
         {
-            var numWords = result.Query.Split(' ').Length;
-            if (numWords >= int.Parse(_textAnalyticsMinLength) && _textAnalyticsApiKey != string.Empty)
+            List<DocumentInput> docs = new List<DocumentInput>
             {
-                List<DocumentInput> docs = new List<DocumentInput>
-                {
-                    new DocumentInput {id = 1, text = result.Query}
-                };
-                BatchInput sentimentInput = new BatchInput {documents = docs};
-                var jsonSentimentInput = JsonConvert.SerializeObject(sentimentInput);
-                var sentimentInfo = GetSentiment(_textAnalyticsApiKey, jsonSentimentInput);
-                var sentimentScore = sentimentInfo.documents[0].score;
-                return sentimentScore;
-            }
-            return -1;
+                new DocumentInput {id = 1, text = message}
+            };
+            BatchInput sentimentInput = new BatchInput {documents = docs};
+            var jsonSentimentInput = JsonConvert.SerializeObject(sentimentInput);
+            var sentimentInfo = GetSentiment(_textAnalyticsApiKey, jsonSentimentInput);
+            var sentimentScore = sentimentInfo.documents[0].score;
+            return sentimentScore;
         }
 
         private static BatchResult GetSentiment(string apiKey, string jsonSentimentInput)
