@@ -7,6 +7,7 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Luis;
 using Microsoft.Bot.Builder.Luis.Models;
 using Microsoft.Bot.Connector;
+using Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry;
 
 namespace Microsoft.Bot.Sample.SimpleAlarmBot
 {
@@ -16,9 +17,10 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot
     {
         public const string DefaultAlarmWhat = "default";
 
-        public const string Entity_Alarm_Title = "builtin.alarm.title";
-        public const string Entity_Alarm_Start_Time = "builtin.alarm.start_time";
-        public const string Entity_Alarm_Start_Date = "builtin.alarm.start_date";
+        public const string EntityAlarmName = "AlarmName";
+        public const string EntityAlarmTitle = "builtin.alarm.title";
+        public const string EntityAlarmStartTime = "builtin.alarm.start_time";
+        public const string EntityAlarmStartDate = "builtin.alarm.start_date";
         private readonly Dictionary<string, Alarm> _alarmByWhat = new Dictionary<string, Alarm>();
         private Alarm _turnOff;
 
@@ -29,6 +31,12 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot
             : base(service)
         {}
 
+        protected override Task DispatchToIntentHandler(IDialogContext context, IAwaitable<IMessageActivity> item, IntentRecommendation bestInent, LuisResult result)
+        {
+            TelemetryLogger.TrackLuisIntent(context.Activity, result);
+            return base.DispatchToIntentHandler(context, item, bestInent, result);
+        }
+
         public bool TryFindAlarm(LuisResult result, out Alarm alarm)
         {
             alarm = null;
@@ -36,7 +44,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot
             string what;
 
             EntityRecommendation title;
-            if (result.TryFindEntity(Entity_Alarm_Title, out title))
+            if (result.TryFindEntity(EntityAlarmName, out title))
             {
                 what = title.Entity;
             }
@@ -93,21 +101,21 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot
         public async Task SetAlarm(IDialogContext context, LuisResult result)
         {
             EntityRecommendation title;
-            if (!result.TryFindEntity(Entity_Alarm_Title, out title))
+            if (!result.TryFindEntity(EntityAlarmName, out title))
             {
-                title = new EntityRecommendation(type: Entity_Alarm_Title) {Entity = DefaultAlarmWhat};
+                title = new EntityRecommendation(type: EntityAlarmName) {Entity = DefaultAlarmWhat};
             }
 
             EntityRecommendation date;
-            if (!result.TryFindEntity(Entity_Alarm_Start_Date, out date))
+            if (!result.TryFindEntity(EntityAlarmStartDate, out date))
             {
-                date = new EntityRecommendation(type: Entity_Alarm_Start_Date) {Entity = string.Empty};
+                date = new EntityRecommendation(type: EntityAlarmStartDate) {Entity = string.Empty};
             }
 
             EntityRecommendation time;
-            if (!result.TryFindEntity(Entity_Alarm_Start_Time, out time))
+            if (!result.TryFindEntity(EntityAlarmStartTime, out time))
             {
-                time = new EntityRecommendation(type: Entity_Alarm_Start_Time) {Entity = string.Empty};
+                time = new EntityRecommendation(type: EntityAlarmStartTime) {Entity = string.Empty};
             }
 
             var parser = new Parser();

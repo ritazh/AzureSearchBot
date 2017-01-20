@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs.Internals;
 using Microsoft.Bot.Builder.History;
 using Microsoft.Bot.Connector;
-using Newtonsoft.Json;
 
 namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
 {
