@@ -63,8 +63,7 @@ bot.dialog('/getName', [
     (session, results, next) => {
         const name = results.response;
 
-        // Basic validation - did we get a response?
-        if (!name || name.trim().length === 0) {
+        if (!name || name.trim().length > 2) {
             // Bad response. Logic for single re-prompt
             if (session.dialogData.didReprompt) {
                 // Re-prompt ocurred
