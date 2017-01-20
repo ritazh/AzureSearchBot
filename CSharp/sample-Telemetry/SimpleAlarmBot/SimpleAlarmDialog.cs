@@ -11,7 +11,7 @@ using Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry;
 
 namespace Microsoft.Bot.Sample.SimpleAlarmBot
 {
-    [LuisModel("56c73d36-e6de-441f-b2c2-6ba7ea73a1bf", "6d0966209c6e4f6b835ce34492f3e6d9")]
+    [LuisModel("c413b2ef-382c-45bd-8ff0-f76d60e2a821", "6d0966209c6e4f6b835ce34492f3e6d9")]
     [Serializable]
     public class SimpleAlarmDialog : LuisDialog<object>
     {
@@ -97,7 +97,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot
             context.Wait(MessageReceived);
         }
 
-        [LuisIntent("alarm.set_alarm")]
+        [LuisIntent("builtin.intent.alarm.set_alarm")]
         public async Task SetAlarm(IDialogContext context, LuisResult result)
         {
             EntityRecommendation title;

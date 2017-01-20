@@ -75,7 +75,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
                 var properties = new Dictionary<string, string>
                 {
                     {"intent", result.Intents[0].Intent},
-                    {"score", result.Intents[0].Score == null ? "" : result.Intents[0].Score.ToString()},
+                    {"score", result.Intents[0].Score.ToString()},
                     {"entities", JsonConvert.SerializeObject(result.Entities)} // TODO: test this
                     // TODO: where do I get the errors from like Mor?
                 };
