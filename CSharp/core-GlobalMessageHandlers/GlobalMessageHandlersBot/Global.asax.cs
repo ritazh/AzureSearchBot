@@ -16,18 +16,13 @@ namespace GlobalMessageHandlersBot
 
         private void RegisterBotModules()
         {
-
             var builder = new ContainerBuilder();
 
             builder.RegisterModule(new ReflectionSurrogateModule());
 
             builder.RegisterModule<GlobalMessageHandlersBotModule>();
 
-            //builder.RegisterControllers(typeof(WebApiApplication).Assembly);
-
             builder.Update(Conversation.Container);
-
-            //DependencyResolver.SetResolver(new AutofacDependencyResolver(Conversation.Container));
         }
     }
 }

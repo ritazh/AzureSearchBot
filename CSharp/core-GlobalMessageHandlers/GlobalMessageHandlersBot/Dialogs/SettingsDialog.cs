@@ -12,7 +12,7 @@ namespace GlobalMessageHandlersBot.Dialogs
     {
         public async Task StartAsync(IDialogContext context)
         {
-            await context.PostAsync("This is the settings dialog. Reply with anything to return to prior dialog.");
+            await context.PostAsync("This is the Settings Dialog. Reply with anything to return to prior dialog.");
 
             context.Wait(this.MessageReceived);
         }
@@ -23,9 +23,7 @@ namespace GlobalMessageHandlersBot.Dialogs
 
             if (message.Text.Trim().Length > 0)
             {
-                await context.PostAsync("Done with Settings Dialog. Returning to the prior dialog.");
-
-                context.Done(message.Text);
+                context.Done<object>(null);
             }
             else
             {

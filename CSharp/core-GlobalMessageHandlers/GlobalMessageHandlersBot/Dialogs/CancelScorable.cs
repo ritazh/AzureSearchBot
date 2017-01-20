@@ -8,11 +8,11 @@ using Microsoft.Bot.Connector;
 
 namespace GlobalMessageHandlersBot.Dialogs
 {
-    public class SettingsScorable : IScorable<double>
+    public class CancelScorable : IScorable<double>
     {
         private readonly IDialogStack stack;
 
-        public SettingsScorable(IDialogStack stack)
+        public CancelScorable(IDialogStack stack)
         {
             SetField.NotNull(out this.stack, nameof(stack), stack);
         }
@@ -23,7 +23,7 @@ namespace GlobalMessageHandlersBot.Dialogs
 
             if (message != null && !string.IsNullOrWhiteSpace(message.Text))
             {
-                if (message.Text.Equals("settings", StringComparison.InvariantCultureIgnoreCase))
+                if (message.Text.Equals("cancel", StringComparison.InvariantCultureIgnoreCase))
                 {
                     return message.Text;
                 }
@@ -41,18 +41,7 @@ namespace GlobalMessageHandlersBot.Dialogs
 
         public async Task PostAsync<Item>(Item item, object state, CancellationToken token)
         {
-            var message = item as IMessageActivity;
-
-            if (message != null)
-            {
-                var settingsDialog = new SettingsDialog();
-
-                var interruption = settingsDialog.Void<object, IMessageActivity>();
-
-                this.stack.Call(interruption, null);
-
-                await this.stack.PollAsync(token);
-            }
+            this.stack.Reset();
         }
     }
 }

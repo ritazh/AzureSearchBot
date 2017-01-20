@@ -17,6 +17,10 @@ namespace GlobalMessageHandlersBot
             builder.RegisterType<SettingsScorable>()
                 .As<IScorable<double>>()
                 .InstancePerLifetimeScope();
+
+            builder.RegisterType<CancelScorable>()
+                .As<IScorable<double>>()
+                .InstancePerLifetimeScope();
         }
     }
 }
