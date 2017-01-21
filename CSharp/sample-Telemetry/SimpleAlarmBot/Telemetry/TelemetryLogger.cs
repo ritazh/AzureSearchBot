@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -87,25 +86,17 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
         /// </summary>
         public static void TrackLuisIntent(IActivity activity, LuisResult result)
         {
-            try
+            var properties = new Dictionary<string, string>
             {
-                var properties = new Dictionary<string, string>
-                {
-                    {"intent", result.Intents[0].Intent},
-                    {"score", result.Intents[0].Score.ToString()},
-                    {"entities", JsonConvert.SerializeObject(result.Entities)} // TODO: test this
-                    // TODO: where do I get the errors from like Mor?
-                };
+                {"intent", result.Intents[0].Intent},
+                {"score", result.Intents[0].Score.ToString()},
+                {"entities", JsonConvert.SerializeObject(result.Entities)} // TODO: test this
+                // TODO: where do I get the errors from like Mor?
+            };
 
-                var eventTelemetry = BuildEventTelemetry(activity, properties);
-                eventTelemetry.Name = _luisIntentReceived;
-                TelemetryClient.TrackEvent(eventTelemetry);
-            }
-            catch (Exception ex)
-            {
-                Trace.TraceError(ex.ToString());
-                throw;
-            }
+            var eventTelemetry = BuildEventTelemetry(activity, properties);
+            eventTelemetry.Name = _luisIntentReceived;
+            TelemetryClient.TrackEvent(eventTelemetry);
         }
 
         private static EventTelemetry BuildEventTelemetry(IActivity activity, IDictionary<string, string> properties = null, IDictionary<string, double> metrics = null)
