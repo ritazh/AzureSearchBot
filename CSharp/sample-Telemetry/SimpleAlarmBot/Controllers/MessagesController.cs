@@ -24,15 +24,15 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Controllers
             }
             else
             {
-                HandleSystemMessage(activity);
+                await HandleSystemMessage(activity);
             }
             var response = Request.CreateResponse(HttpStatusCode.OK);
             return response;
         }
 
-        private Activity HandleSystemMessage(Activity message)
+        private async Task<Activity> HandleSystemMessage(Activity message)
         {
-            TelemetryLogger.TrackActivity(message);
+            await TelemetryLogger.TrackActivity(message, null);
 
             if (message.Type == ActivityTypes.DeleteUserData)
             {

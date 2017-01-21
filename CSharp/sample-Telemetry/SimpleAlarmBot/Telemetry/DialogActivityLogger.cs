@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs.Internals;
 using Microsoft.Bot.Builder.History;
@@ -21,17 +20,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
 
         public async Task LogAsync(IActivity activity)
         {
-            // Questions
-            // IDialogContext?
-            //    ctx.ConversationData?
-            //    ctx.PrivateConversationData?
-            //    ctx.UserData?
-            // Luis?
-            // Forms?
-            //StateClient stateClient = activity.GetStateClient();
-            await _botData.LoadAsync(CancellationToken.None);
-            var p = _botData.ConversationData;
-            TelemetryLogger.TrackActivity(activity);
+            await TelemetryLogger.TrackActivity(activity, _botData);
         }
     }
 }

@@ -6,8 +6,11 @@ using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.Bot.Builder.Dialogs.Internals;
 using Microsoft.Bot.Builder.Luis.Models;
 using Microsoft.Bot.Connector;
 using Newtonsoft.Json;
@@ -36,16 +39,25 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
         /// <summary>
         /// Logs an IActivity to AppInishgts.
         /// </summary>
-        /// <param name="activity"></param>
-        public static void TrackActivity(IActivity activity)
+        public static async Task TrackActivity(IActivity activity, IBotData botData)
         {
             var et = BuildEventTelemetry(activity);
+#if DEBUG
+            if (botData != null)
+            {
+                await botData.LoadAsync(CancellationToken.None);
+                et.Properties.Add("debugConversationData", JsonConvert.SerializeObject(botData.ConversationData));
+                et.Properties.Add("debugPrivateConversationData", JsonConvert.SerializeObject(botData.PrivateConversationData));
+                et.Properties.Add("debugUserData", JsonConvert.SerializeObject(botData.UserData));
+                et.Properties.Add("debugActivity", JsonConvert.SerializeObject(activity));
+            }
+#endif
             TelemetryClient.TrackEvent(et);
 
             // Track sentiment only for incoming messages. 
             if (et.Name == _messageReceived)
             {
-                TrackMessageSentiment(activity);
+                await TrackMessageSentiment(activity);
             }
         }
 
@@ -53,7 +65,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
         /// Helper method to track the sentiment of incoming messages.
         /// </summary>
         /// <param name="activity"></param>
-        private static void TrackMessageSentiment(IActivity activity)
+        private static async Task TrackMessageSentiment(IActivity activity)
         {
             var text = activity.AsMessageActivity().Text;
             var numWords = text.Split(' ').Length;
@@ -61,7 +73,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
             {
                 var properties = new Dictionary<string, string>
                 {
-                    {"score", GetSentimentScore(text).ToString(CultureInfo.InvariantCulture)}
+                    {"score", (await GetSentimentScore(text)).ToString(CultureInfo.InvariantCulture)}
                 };
 
                 var et = BuildEventTelemetry(activity, properties);
@@ -84,12 +96,6 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
                     {"entities", JsonConvert.SerializeObject(result.Entities)} // TODO: test this
                     // TODO: where do I get the errors from like Mor?
                 };
-
-                //var metrics = new Dictionary<string, double>
-                //{
-                //    {"intentScore", result.Intents[0].Score ?? 0},
-                //    {"intentSentimentScore", GetSentimentScore(result)}
-                //};
 
                 var eventTelemetry = BuildEventTelemetry(activity, properties);
                 eventTelemetry.Name = _luisIntentReceived;
@@ -164,7 +170,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
             return s.Substring(1, s.Length - 2);
         }
 
-        private static double GetSentimentScore(string message)
+        private static async Task<double> GetSentimentScore(string message)
         {
             List<DocumentInput> docs = new List<DocumentInput>
             {
@@ -172,12 +178,12 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
             };
             BatchInput sentimentInput = new BatchInput {Documents = docs};
             var jsonSentimentInput = JsonConvert.SerializeObject(sentimentInput);
-            var sentimentInfo = GetSentiment(_textAnalyticsApiKey, jsonSentimentInput);
+            var sentimentInfo = await GetSentiment(_textAnalyticsApiKey, jsonSentimentInput);
             var sentimentScore = sentimentInfo.Documents[0].Score;
             return sentimentScore;
         }
 
-        private static BatchResult GetSentiment(string apiKey, string jsonSentimentInput)
+        private static async Task<BatchResult> GetSentiment(string apiKey, string jsonSentimentInput)
         {
             using (var client = new HttpClient())
             {
@@ -190,20 +196,20 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
                 byte[] byteData = Encoding.UTF8.GetBytes(jsonSentimentInput);
 
                 var uri = "text/analytics/v2.0/sentiment";
-                var sentimentRawResponse = CallEndpoint(client, uri, byteData);
+                var sentimentRawResponse = await CallEndpoint(client, uri, byteData);
 
                 var sentimentJsonResponse = JsonConvert.DeserializeObject<BatchResult>(sentimentRawResponse);
                 return sentimentJsonResponse;
             }
         }
 
-        private static string CallEndpoint(HttpClient client, string uri, byte[] byteData)
+        private static async Task<string> CallEndpoint(HttpClient client, string uri, byte[] byteData)
         {
             using (var content = new ByteArrayContent(byteData))
             {
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                var response = client.PostAsync(uri, content).Result;
-                return response.Content.ReadAsStringAsync().Result;
+                var response = await client.PostAsync(uri, content);
+                return await response.Content.ReadAsStringAsync();
             }
         }
     }
