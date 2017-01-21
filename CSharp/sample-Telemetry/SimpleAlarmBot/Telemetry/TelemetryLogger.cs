@@ -41,6 +41,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
         {
             var et = BuildEventTelemetry(activity);
             TelemetryClient.TrackEvent(et);
+
             // Track sentiment only for incoming messages. 
             if (et.Name == _messageReceived)
             {
@@ -48,6 +49,10 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
             }
         }
 
+        /// <summary>
+        /// Helper method to track the sentiment of incoming messages.
+        /// </summary>
+        /// <param name="activity"></param>
         private static void TrackMessageSentiment(IActivity activity)
         {
             var text = activity.AsMessageActivity().Text;
@@ -163,12 +168,12 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
         {
             List<DocumentInput> docs = new List<DocumentInput>
             {
-                new DocumentInput {id = 1, text = message}
+                new DocumentInput {Id = 1, Text = message}
             };
-            BatchInput sentimentInput = new BatchInput {documents = docs};
+            BatchInput sentimentInput = new BatchInput {Documents = docs};
             var jsonSentimentInput = JsonConvert.SerializeObject(sentimentInput);
             var sentimentInfo = GetSentiment(_textAnalyticsApiKey, jsonSentimentInput);
-            var sentimentScore = sentimentInfo.documents[0].score;
+            var sentimentScore = sentimentInfo.Documents[0].Score;
             return sentimentScore;
         }
 

@@ -5,6 +5,6 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
 {
     public class BatchResult
     {
-        public List<DocumentResult> documents { get; set; }
+        public List<DocumentResult> Documents { get; set; }
     }
 }

@@ -4,7 +4,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
 {
     public class DocumentResult
     {
-        public double score { get; set; }
-        public string id { get; set; }
+        public double Score { get; set; }
+        public string Id { get; set; }
     }
 }
