@@ -21,15 +21,6 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
     /// </summary>
     public static class TelemetryLogger
     {
-        // TODO: talk with Mor, can we use PascalCase for Names? (like AppInsights uses out of the box?)
-        private const string _messageReceived = "message.received";
-        private const string _messageSent = "message.send";
-        private const string _luisIntentReceived = "message.intent.received";
-        private const string _luisIntentDialog = "message.intent.dialog"; // TODO: talk with Mor about this one??
-        private const string _messageSentiment = "message.sentiment";
-        private const string _messageConvertStarted = "message.convert.start";
-        private const string _messageConvertEnded = "message.convert.end";
-        private const string _otherActivity = "message.other";
         private static readonly string _textAnalyticsMinLength = ConfigurationManager.AppSettings["TextAnalyticsMinLenght"];
         private static readonly string _textAnalyticsApiKey = ConfigurationManager.AppSettings["TextAnalyticsApiKey"];
 
@@ -54,7 +45,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
             TelemetryClient.TrackEvent(et);
 
             // Track sentiment only for incoming messages. 
-            if (et.Name == _messageReceived)
+            if (et.Name == TelemetryEventTypes.MessageReceived)
             {
                 await TrackMessageSentiment(activity);
             }
@@ -76,7 +67,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
                 };
 
                 var et = BuildEventTelemetry(activity, properties);
-                et.Name = _messageSentiment;
+                et.Name = TelemetryEventTypes.MessageSentiment;
                 TelemetryClient.TrackEvent(et);
             }
         }
@@ -95,7 +86,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
             };
 
             var eventTelemetry = BuildEventTelemetry(activity, properties);
-            eventTelemetry.Name = _luisIntentReceived;
+            eventTelemetry.Name = TelemetryEventTypes.LuisIntentReceived;
             TelemetryClient.TrackEvent(eventTelemetry);
         }
 
@@ -114,25 +105,25 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
                     var messageActivity = activity.AsMessageActivity();
                     if (activity.ReplyToId == null)
                     {
-                        et.Name = _messageReceived;
+                        et.Name = TelemetryEventTypes.MessageReceived;
                         et.Properties.Add("userId", activity.From.Id);
                         et.Properties.Add("userName", activity.From.Name);
                     }
                     else
                     {
-                        et.Name = _messageSent;
+                        et.Name = TelemetryEventTypes.MessageSent;
                     }
                     et.Properties.Add("text", messageActivity.Text);
                     et.Properties.Add("conversationId", messageActivity.Conversation.Id);
                     break;
                 case ActivityTypes.ConversationUpdate:
-                    et.Name = _messageConvertStarted;
+                    et.Name = TelemetryEventTypes.ConversationUpdate;
                     break;
                 case ActivityTypes.EndOfConversation:
-                    et.Name = _messageConvertEnded;
+                    et.Name = TelemetryEventTypes.ConversationEnded;
                     break;
                 default:
-                    et.Name = _otherActivity;
+                    et.Name = TelemetryEventTypes.OtherActivity;
                     break;
             }
 
