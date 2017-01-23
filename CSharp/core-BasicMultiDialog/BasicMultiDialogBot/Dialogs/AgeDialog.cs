@@ -9,6 +9,7 @@ namespace ConversationFlow.Dialogs
     public class AgeDialog : IDialog<int>
     {
         private string name;
+        private int attempts = 3;
 
         /* Constructor to initialize the dialog. Use to create reusable dialogs and pass in prompts, 
             messages when a reply isn't understood, etc. */
@@ -36,7 +37,19 @@ namespace ConversationFlow.Dialogs
             }
             else
             {
-                context.Fail(new Exception("Message was not a valid age."));
+                --attempts;
+                if (attempts > 0)
+                {
+                    await context.PostAsync("I'm sorry, I don't understand your reply. What is your age (e.g. '42')?");
+
+                    context.Wait(this.MessageReceivedAsync);
+                }
+                else
+                {
+                    /* Fails the current dialog, removes it from the dialog stack, and returns the exception to the 
+                        parent/calling dialog. */
+                    context.Fail(new TooManyAttemptsException("Message was not a valid age."));
+                }
             }
         }
     }

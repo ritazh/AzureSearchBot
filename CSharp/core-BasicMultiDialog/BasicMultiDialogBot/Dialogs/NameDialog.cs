@@ -40,8 +40,7 @@ namespace ConversationFlow.Dialogs
                 --attempts;
                 if (attempts > 0)
                 {
-                    await context.PostAsync("I'm sorry, I don't understand your reply. I was expecting something like 'Bill' or 'Melinda'.");
-                    await context.PostAsync("What is your name.");
+                    await context.PostAsync("I'm sorry, I don't understand your reply. What is your name (e.g. 'Bill', 'Melinda')?");
 
                     context.Wait(this.MessageReceivedAsync);
                 }
