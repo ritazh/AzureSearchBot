@@ -33,22 +33,22 @@ bot.dialog('/', [
             const name = session.privateConversationData.name = results.response;
 
             // When calling another dialog, you can pass arguments in the second parameter
-            session.beginDialog('/getCity', { name: name });
+            session.beginDialog('/getAge', { name: name });
         } else {
             // no valid response received - End the conversation
             session.endConversation(`Sorry, I didn't understand the response. Let's start over.`);
         }
     },
     (session, results, next) => {
-        // executed when getCity dialog completes
+        // executed when getAge dialog completes
         // results parameter contains the object passed into endDialogWithResults
 
         // check for a response
         if (results.response) {
-            const city = session.privateConversationData.city = results.response;
+            const age = session.privateConversationData.age = results.response;
             const name = session.privateConversationData.name;
 
-            session.endConversation(`Hello ${name} from ${city}`);
+            session.endConversation(`Hello ${name}. You are ${age}`);
         } else {
             // no valid response received - End the conversation
             session.endConversation(`Sorry, I didn't understand the response. Let's start over.`);
@@ -58,23 +58,31 @@ bot.dialog('/', [
 
 bot.dialog('/getName', [
     (session, args, next) => {
+        // store reprompt flag
+        if(args) {
+            session.dialogData.isReprompt = args.isReprompt;
+        }
+
+        // prompt user
         builder.Prompts.text(session, 'What is your name?');
     },
     (session, results, next) => {
         const name = results.response;
 
-        if (!name || name.trim().length > 2) {
+        if (!name || name.trim().length < 3) {
             // Bad response. Logic for single re-prompt
-            if (session.dialogData.didReprompt) {
+            if (session.dialogData.isReprompt) {
                 // Re-prompt ocurred
                 // Send back empty string
                 session.endDialogWithResult({ response: '' });
             } else {
                 // Set the flag
-                session.dialogData.didReprompt = true;
+                session.send('Sorry, name must be at least 3 characters.');
+
                 // Call replaceDialog to start the dialog over
                 // This will replace the active dialog on the stack
-                session.replaceDialog('/getName');
+                // Send a flag to ensure we only reprompt once
+                session.replaceDialog('/getName', { isReprompt: true });
             }
         } else {
             // Valid name received
@@ -85,32 +93,45 @@ bot.dialog('/getName', [
     }
 ]);
 
-bot.dialog('/getCity', [
+bot.dialog('/getAge', [
     (session, args, next) => {
-        builder.Prompts.text(session, 'Where do you live?');
+        let name = session.dialogData.name = 'User';
+
+        if (args) {
+            // store reprompt flag
+            session.dialogData.isReprompt = args.isReprompt;
+
+            // retrieve name
+            name = session.dialogData.name = args.name;
+        }
+
+        // prompt user
+        builder.Prompts.number(session, `How old are you, ${name}?`);
     },
     (session, results, next) => {
-        const city = results.response;
+        const age = results.response;
 
         // Basic validation - did we get a response?
-        if (!city || city.trim().length === 0) {
+        if (!age || age < 13 || age > 90) {
             // Bad response. Logic for single re-prompt
-            if (session.dialogData.didReprompt) {
+            if (session.dialogData.isReprompt) {
                 // Re-prompt ocurred
                 // Send back empty string
                 session.endDialogWithResult({ response: '' });
             } else {
                 // Set the flag
                 session.dialogData.didReprompt = true;
+                session.send(`Sorry, that doesn't look right.`);
                 // Call replaceDialog to start the dialog over
                 // This will replace the active dialog on the stack
-                session.replaceDialog('/getCity');
+                session.replaceDialog('/getAge', 
+                    { name: session.dialogData.name, isReprompt: true });
             }
         } else {
             // Valid city received
             // Return control to calling dialog
             // Pass the city in the response property of results
-            session.endDialogWithResult({ response: city.trim() });
+            session.endDialogWithResult({ response: age });
         }
     }
 ]);
