@@ -14,20 +14,22 @@ namespace ConversationFlow.Dialogs
     /* All implementations of IDialog are defined with a type for the type of value they return when complete. */
     public class NameDialog : IDialog<string>
     {
+        private int attempts = 3;
+
         public async Task StartAsync(IDialogContext context)
         {
             await context.PostAsync("What is your name?");
 
-            context.Wait(this.MessageReceived);
+            context.Wait(this.MessageReceivedAsync);
         }
 
-        private async Task MessageReceived(IDialogContext context, IAwaitable<IMessageActivity> result)
+        private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
             var message = await result;
 
             /* Have logic in your dialog to parse the response to see if it's a valid result for the dialog 
                 to return. What if the user replied with an image attached? */
-            if (message.Text.Trim().Length > 0)
+            if ((message.Text != null) && (message.Text.Trim().Length > 0))
             {
                 /* Completes the dialog, removes it from the dialog stack, and returns the result to the parent/calling
                     dialog. */
@@ -35,9 +37,20 @@ namespace ConversationFlow.Dialogs
             }
             else
             {
-                /* Fails the current dialog, removes it from the dialog stack, and returns the exception to the 
-                    parent/calling dialog. */
-                context.Fail(new Exception("Message was not a string or was an empty string."));
+                --attempts;
+                if (attempts > 0)
+                {
+                    await context.PostAsync("I'm sorry, I don't understand your reply. I was expecting something like 'Bill' or 'Melinda'.");
+                    await context.PostAsync("What is your name.");
+
+                    context.Wait(this.MessageReceivedAsync);
+                }
+                else
+                {
+                    /* Fails the current dialog, removes it from the dialog stack, and returns the exception to the 
+                        parent/calling dialog. */
+                    context.Fail(new TooManyAttemptsException("Message was not a string or was an empty string."));
+                }
             }
         }
     }

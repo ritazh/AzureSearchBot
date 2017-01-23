@@ -21,10 +21,10 @@ namespace ConversationFlow.Dialogs
         {
             await context.PostAsync($"{ this.name }, what is your age?");
 
-            context.Wait(this.MessageReceived);
+            context.Wait(this.MessageReceivedAsync);
         }
 
-        private async Task MessageReceived(IDialogContext context, IAwaitable<IMessageActivity> result)
+        private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
             var message = await result;
 

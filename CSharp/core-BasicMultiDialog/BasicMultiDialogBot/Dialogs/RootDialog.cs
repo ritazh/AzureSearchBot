@@ -57,7 +57,7 @@
             }
             catch (Exception)
             {
-                await context.PostAsync("I'm sorry that I don't understand your reply. Let's try again.");
+                await context.PostAsync("I'm sorry I'm having issues understanding you. Let's try again.");
 
                 /* */
                 await this.SendWelcomeMessageAsync(context);
@@ -75,7 +75,7 @@
             }
             catch (Exception)
             {
-                await context.PostAsync("I'm sorry, I don't understand your reply. Let's try again.");
+                await context.PostAsync("I'm sorry I'm having issues understanding you. Let's try again.");
             }
             finally
             {
