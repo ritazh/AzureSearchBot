@@ -4,14 +4,13 @@
     using System.Threading.Tasks;
     using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Bot.Connector;
-    using System.Collections.Generic;
 
     [Serializable]
     public class RootDialog : IDialog<object>
     {
 
         private string name;
-        private string city;
+        private int age;
 
         public async Task StartAsync(IDialogContext context)
         {
@@ -49,13 +48,12 @@
         {
             try
             {
-
                 this.name = await result;
 
                 /* CityDialog has constructor that accepts a name to show how you can pass parameters to initialize
                     a dialog. Create reusable dialogs that accept parameters to change their behavior 
                     (prompts, etc.) */
-                context.Call(new CityDialog(this.name), this.CityDialogResumeAfter);
+                context.Call(new AgeDialog(this.name), this.AgeDialogResumeAfter);
             }
             catch (Exception)
             {
@@ -66,19 +64,18 @@
             }
         }
 
-        private async Task CityDialogResumeAfter(IDialogContext context, IAwaitable<string> result)
+        private async Task AgeDialogResumeAfter(IDialogContext context, IAwaitable<int> result)
         {
             try
             {
-                this.city = await result;
+                this.age = await result;
 
-                await context.PostAsync($"Your name is { name } and you are from { city }.");
+                await context.PostAsync($"Your name is { name } and your age is { age }.");
 
             }
             catch (Exception)
             {
                 await context.PostAsync("I'm sorry, I don't understand your reply. Let's try again.");
-
             }
             finally
             {
