@@ -1,3 +1,5 @@
+const builder = require('botbuilder');
+
 module.exports = [
     (session, args, next) => {
         let name = session.dialogData.name = 'User';

@@ -1,15 +1,22 @@
 # Basic Multi-Dialog Sample
 
-A sample that shows how to use [Dialog](https://docs.botframework.com/en-us/csharp/builder/sdkreference/dialogs.html) system from the [Bot Builder for .NET SDK](https://dev.botframework.com/) to model a conversation.
+A sample that shows how to use the [Bot Builder for .NET SDK](https://dev.botframework.com/)'s [Dialog](https://docs.botframework.com/en-us/csharp/builder/sdkreference/dialogs.html) system from the  to model a conversation.
 
 ### Prerequisites
 
-To run this sample, install the prerequisites by following the steps in the [Getting Started in .NET](https://docs.botframework.com/en-us/csharp/builder/sdkreference/gettingstarted.html) documentation.
+To run this sample, install the prerequisites by following the steps in the [Getting Started in .NET](https://docs.botframework.com/en-us/csharp/builder/sdkreference/gettingstarted.html) section of the documentation.
 
 ### Code Highlights
 
-Dialogs model a conversational process, where the exchange of messages between bot and user is the primary channel for interaction with the outside world.
-Dialogs can be composed with other dialogs to maximize reuse, and a dialog context maintains a stack of dialogs active in the conversation.
+The Bot Builder for .NET SDK provides the Dialogs namespace to allows developers to easily model a conversation in the bots they develop.
+Dialogs are classes that implement the IDialog interface and are used to send and receive messages to and from the conversation. 
+Dialogs can be simple clasess that prompt the user for information and validate the response, or can be more complex conversation flows composed of other dialogs.
+
+context
+
+
+Dialogs can be composed with other dialogs to maximize reuse, 
+and a dialog context maintains a stack of dialogs active in the conversation.
 This conversation state (the stack of active dialogs and each dialog's state) is stored in the state service provided by the Bot Connector service, making the bot implementation stateless between requests. (Much like a web application that does not store session state in the web server's memory.)
 
 The [`RootDialog`](Dialogs/RootDialog.cs) class, which represents our conversation, is wired into the `MessageController.Post()` method. Check out the [MessagesController](Controllers/MessagesController.cs#L22) class passing a delegate to the `Conversation.SendAsync()` method that will be used to construct a `RootDialog` and execute the dialog's `StartAsync()` method.
