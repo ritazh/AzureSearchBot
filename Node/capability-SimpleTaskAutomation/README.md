@@ -142,7 +142,7 @@ library.dialog('/', [
 
 > It is worth noting that calling other dialogs within your library don't need to be prefixed with the library's id. It is only when crossing from one library context to another that you need to include the library name prefix on your `session.beginDialog()` calls.
 
-> To limit the times the user will reprompt when the response is not valid, the [maxRetries] (https://docs.botframework.com/en-us/node/builder/chat-reference/interfaces/_botbuilder_d_.ipromptargs.html#maxretries) can be specified. If the maximum number of retries are reached the next dialog is called with the [args.resumed](https://docs.botframework.com/en-us/node/builder/chat-reference/interfaces/_botbuilder_d_.ipromptresult.html#resumed) set in [notCompleted](https://docs.botframework.com/en-us/node/builder/chat-reference/enums/_botbuilder_d_.resumereason.html#notcompleted). 
+> To limit the times the user will reprompt when the response is not valid, the [maxRetries](https://docs.botframework.com/en-us/node/builder/chat-reference/interfaces/_botbuilder_d_.ipromptargs.html#maxretries) can be specified. If the maximum number of retries are reached the next dialog is called with the [args.resumed](https://docs.botframework.com/en-us/node/builder/chat-reference/interfaces/_botbuilder_d_.ipromptresult.html#resumed) set in [notCompleted](https://docs.botframework.com/en-us/node/builder/chat-reference/enums/_botbuilder_d_.resumereason.html#notcompleted). 
 The message the bot will send when an no valid user input was received is customizable with the [retryPrompt](https://docs.botframework.com/en-us/node/builder/chat-reference/interfaces/_botbuilder_d_.ipromptargs.html#retryprompt).
 
 ### Outcome
