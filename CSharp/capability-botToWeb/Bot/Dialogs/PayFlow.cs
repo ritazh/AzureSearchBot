@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Bot.Dialogs
 {
@@ -25,11 +26,11 @@ namespace Bot.Dialogs
     [Serializable]
     public class PayFlow : IDialog<bool>
     {
-        public Task StartAsync(IDialogContext context)
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async Task StartAsync(IDialogContext context)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             context.Wait<string>(InitialMessageReceived);
-
-            return Task.CompletedTask;
         }
 
         private async Task InitialMessageReceived(IDialogContext context, IAwaitable<string> result)
@@ -42,9 +43,6 @@ namespace Bot.Dialogs
 
         private async Task CreatePayment(APIContext apiContext, IDialogContext context, string amount)
         {
-            //2.Bot creates a payment order
-            double totalAmt = 0.0;
-
             // ###Items
             // Items within a transaction.
             var itemList = new ItemList()
@@ -59,6 +57,9 @@ namespace Bot.Dialogs
                 price = amount,
                 quantity = "1"
             });
+
+            //We're only doing one item so this is not really needed, but with multiple items you need to ensure the sum is correct
+            double totalAmt = itemList.items.Sum( x => Convert.ToDouble(x.price));
 
             // ###Payer
             // A resource representing a Payer that funds a payment
@@ -125,7 +126,6 @@ namespace Bot.Dialogs
 
             // Create a payment using a valid APIContext
             var createdPayment = payment.Create(apiContext);
-
             // Using the `links` provided by the `createdPayment` object, we can give the user the option to redirect to PayPal to approve the payment.
             var links = createdPayment.links.GetEnumerator();
             var urllink = string.Empty;
@@ -135,6 +135,7 @@ namespace Bot.Dialogs
                 if (link.rel.ToLower().Trim().Equals("approval_url"))
                 {
                     urllink = link.href;
+                    break;
                 }
             }
             //var msg = context.MakeMessage();
@@ -142,6 +143,7 @@ namespace Bot.Dialogs
             //msg.Text = $"Please click [here]({urllink}) to PayPal to approve the payment...";
             await context.PostAsync($"Please click [here]({urllink}) to PayPal to approve the payment...");
             context.Wait(StoreReceiptAndFinish);
+
         }
 
         /// <summary>
