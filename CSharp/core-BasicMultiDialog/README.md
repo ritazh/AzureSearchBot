@@ -8,16 +8,17 @@ To run this sample, install the prerequisites by following the steps in the [Get
 
 ### Code Highlights
 
-The Bot Builder for .NET SDK provides the Dialogs namespace to allows developers to easily model a conversation in the bots they develop.
+The Bot Builder for .NET SDK provides the Dialogs namespace to allows developers to easily model a conversation in the bots they develop. 
 Dialogs are classes that implement the IDialog interface and are used to send and receive messages to and from the conversation. 
-Dialogs can be simple clasess that prompt the user for information and validate the response, or can be more complex conversation flows composed of other dialogs.
+Dialogs can be simple classes that prompt the user for information and validate the response, or can be more complex conversation flows composed of other dialogs.
 
-context
-
-
-Dialogs can be composed with other dialogs to maximize reuse, 
-and a dialog context maintains a stack of dialogs active in the conversation.
-This conversation state (the stack of active dialogs and each dialog's state) is stored in the state service provided by the Bot Connector service, making the bot implementation stateless between requests. (Much like a web application that does not store session state in the web server's memory.)
+All dialogs accept an implementation of the IDialogContext interface, used to managed the context of the conversation. 
+This context object manages the dialog stack, by implementing the IDialogStack interface. 
+The dialog at the top of the stack is the active dialog in the conversation and can:
+•	Post messages to the conversation.
+•	Wait for messages from the conversation, suspending the conversation until the message arrives.
+•	Call children dialogs, pushing them onto the stack and making them the active dialog in the conversation.
+•	Mark them selves as done, popping them from the stack, and passing control back to the parent dialog.
 
 The [`RootDialog`](Dialogs/RootDialog.cs) class, which represents our conversation, is wired into the `MessageController.Post()` method. Check out the [MessagesController](Controllers/MessagesController.cs#L22) class passing a delegate to the `Conversation.SendAsync()` method that will be used to construct a `RootDialog` and execute the dialog's `StartAsync()` method.
 
