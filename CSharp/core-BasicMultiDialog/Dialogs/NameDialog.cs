@@ -6,7 +6,7 @@ using System.Web;
 using System.Threading.Tasks;
 using Microsoft.Bot.Connector;
 
-namespace ConversationFlow.Dialogs
+namespace BasicMultiDialogBot.Dialogs
 {
     /* All implementations of IDialog must be serializable so the conversation state (the dialog stack) can be 
         serialized when the bot is waiting for the user to respond. */

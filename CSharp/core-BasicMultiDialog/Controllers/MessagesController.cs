@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Builder.Dialogs;
-using ConversationFlow.Dialogs;
+using BasicMultiDialogBot.Dialogs;
 
-namespace ConversationFlow
+namespace BasicMultiDialogBot
 {
     [BotAuthentication]
     public class MessagesController : ApiController

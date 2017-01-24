@@ -3,7 +3,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Bot.Connector;
 
-namespace ConversationFlow.Dialogs
+namespace BasicMultiDialogBot.Dialogs
 {
     [Serializable]
     public class AgeDialog : IDialog<int>
