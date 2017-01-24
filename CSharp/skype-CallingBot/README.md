@@ -17,7 +17,7 @@ The minimum prerequisites to run this sample are:
 
 Skype Bot Platform for Calling API provides a mechanism for receiving and handling Skype voice calls by bots.
 
-Check out the [`CallController`](Controllers/CallController#L15) registering the instance of calling bot responsible for handling the calling requests with the [`CallingConversation`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d6/d56/class_microsoft_1_1_bot_1_1_builder_1_1_calling_1_1_calling_conversation.html) module.
+Check out the [`CallController`](Controllers/CallController.cs#L15) registering the instance of calling bot responsible for handling the calling requests with the [`CallingConversation`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d6/d56/class_microsoft_1_1_bot_1_1_builder_1_1_calling_1_1_calling_conversation.html) module.
 
 ````C#
 public CallingController() : base()
@@ -26,7 +26,7 @@ public CallingController() : base()
 }  
 ````
 
-Every time a Skype user places a call to a bot, Skype Bot Platform for Calling will look up the calling url that was used during the configuration of the Skype channel (Calling Webhook) bot and notify the bot about the call. Check out the[`CallController`](Controllers/CallController#L27) processing a calling request within the the [`CallingConversation`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d6/d56/class_microsoft_1_1_bot_1_1_builder_1_1_calling_1_1_calling_conversation.html) module.
+Every time a Skype user places a call to a bot, Skype Bot Platform for Calling will look up the calling url that was used during the configuration of the Skype channel (Calling Webhook) bot and notify the bot about the call. Check out the[`CallController`](Controllers/CallController.cs#L27) processing a calling request within the the [`CallingConversation`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d6/d56/class_microsoft_1_1_bot_1_1_builder_1_1_calling_1_1_calling_conversation.html) module.
 
 ````C#
 [Route("call")]
@@ -155,29 +155,4 @@ To get more information about how to get started in Bot Builder for .NET and the
 * [Bot Builder for .NET](https://docs.botframework.com/en-us/csharp/builder/sdkreference/index.html)
 * [Building a simple Skype Calling Bot](https://docs.botframework.com/en-us/csharp/builder/sdkreference/calling.html)
 * [Skype Calling API](https://docs.botframework.com/en-us/skype/calling/)
-
-# VoiceBot - Emergency Services IVR Bot
-
-This sample shows how to create a Bot using the Microsoft Bot Framework and use the Skype channel for voice input. 
-
-DTMF tones are used to detect keypad input.  The scenario here is for an Emergency Services Bot where there could
-be different types of services to route through to.  If the situation is non-life threatening a consultant will deal with the call.  However,
-in this example all the consultants are busy (sound familiar?) so you are prompted to leave a voice message.
-
-Microsoft Cognitive Services (Bing Speech Recognition) is used for the speech to text (STT).  The detected speech is then displayed back to the user
-within the conversation.
-
-# This bot uses the following nuget packages:
-
-* Microsoft.Bot.Builder
-* Microsoft.Bold.Builder.Calling
-* Microsoft.Bing.Speech
-
-# To run this bot, follow the below steps
-
-1. Create a new bot on the dev.botframework.com portal
-2. Update the Skype settings of the bot, by enabling audio calls and updating the Calling Webhook
-3. Add your bot to your Skype contacts
-4. Ensure the bot code is running using your bot settings in the web.config
-5. Within Skype Preview, the Call icon should light up - click to begin
 
