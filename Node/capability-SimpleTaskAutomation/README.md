@@ -149,7 +149,7 @@ The message the bot will send when an no valid user input was received is custom
 
 You will see the following result in the Bot Framework Emulator when opening and running the sample solution.
 
-![Sample Outcome](images/outcome-emulator.png)
+![Sample Outcome](images/outcome.png)
 
 ### More Information
 
