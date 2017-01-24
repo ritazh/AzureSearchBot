@@ -1,4 +1,4 @@
-# Middleware Bot Sample
+# Skype Calling Bot Sample
 
 A sample bot showing how to use the Skype Bot Plaform for Calling API for receiving and handling Skype voice calls.
 
@@ -17,7 +17,7 @@ The minimum prerequisites to run this sample are:
 
 Skype Bot Platform for Calling API provides a mechanism for receiving and handling Skype voice calls by bots.
 
-Check out the [`CallController`](CallController#L15) registering the instance of calling bot responsible for handling the calling requests with the [`CallingConversation`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d6/d56/class_microsoft_1_1_bot_1_1_builder_1_1_calling_1_1_calling_conversation.html) module.
+Check out the [`CallController`](Controllers/CallController.cs#L15) registering the instance of calling bot responsible for handling the calling requests with the [`CallingConversation`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d6/d56/class_microsoft_1_1_bot_1_1_builder_1_1_calling_1_1_calling_conversation.html) module.
 
 ````C#
 public CallingController() : base()
@@ -26,7 +26,7 @@ public CallingController() : base()
 }  
 ````
 
-Every time a Skype user places a call to a bot, Skype Bot Platform for Calling will look up the calling url that was used during the configuration of the Skype channel (Calling Webhook) bot and notify the bot about the call. Check out the[`CallController`](CallController#L27) processing a calling request within the the [`CallingConversation`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d6/d56/class_microsoft_1_1_bot_1_1_builder_1_1_calling_1_1_calling_conversation.html) module.
+Every time a Skype user places a call to a bot, Skype Bot Platform for Calling will look up the calling url that was used during the configuration of the Skype channel (Calling Webhook) bot and notify the bot about the call. Check out the[`CallController`](Controllers/CallController.cs#L27) processing a calling request within the the [`CallingConversation`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d6/d56/class_microsoft_1_1_bot_1_1_builder_1_1_calling_1_1_calling_conversation.html) module.
 
 ````C#
 [Route("call")]
@@ -67,6 +67,78 @@ private Task OnPlayPromptCompleted(PlayPromptOutcomeEvent playPromptOutcomeEvent
 }
 ````
 
+The menu is created using a [`Recognize`](https://docs.botframework.com/en-us/skype/calling#recognize) action and set of [`RecognitionOption`](https://docs.botframework.com/en-us/skype/calling#recognitionoption). It supports speech and DTMF choice-based recognition.
+
+Check out the [`CreateIvrOptions`](IVRBot.cs#L113-L141) method automatizing the creation of the `Recognize` action.
+
+````C#
+private static Recognize CreateIvrOptions(string textToBeRead, int numberOfOptions, bool includeBack)
+{
+    if (numberOfOptions > 9)
+    {
+        throw new Exception("too many options specified");
+    }
+
+    var choices = new List<RecognitionOption>();
+
+    for (int i = 1; i <= numberOfOptions; i++)
+    {
+        choices.Add(new RecognitionOption { Name = Convert.ToString(i), DtmfVariation = (char)('0' + i) });
+    }
+
+    if (includeBack)
+    {
+        choices.Add(new RecognitionOption { Name = "#", DtmfVariation = '#' });
+    }
+
+    var recognize = new Recognize
+    {
+        OperationId = Guid.NewGuid().ToString(),
+        PlayPrompt = GetPromptForText(textToBeRead),
+        BargeInAllowed = true,
+        Choices = choices
+    };
+
+    return recognize;
+}
+````
+
+Once the user choose an option and the recognize is completed, the selection is being processed. 
+
+````C#
+private Task OnRecognizeCompleted(RecognizeOutcomeEvent recognizeOutcomeEvent)
+{
+    var callState = this.callStateMap[recognizeOutcomeEvent.ConversationResult.Id];
+
+    ProcessMainMenuSelection(recognizeOutcomeEvent, callState);
+
+    return Task.FromResult(true);
+}
+````
+
+In this sample there is only a single option that will asks the user to record a message. Check out the [`SetupRecording`](IVRBot.cs#L143-L160) method creating the [`Record`](https://docs.botframework.com/en-us/skype/calling#record) action to record the user audio.
+
+````C#
+private static void SetupRecording(Workflow workflow)
+{
+    var id = Guid.NewGuid().ToString();
+
+    var prompt = GetPromptForText(NoConsultantsMessage);
+    var record = new Record
+    {
+        OperationId = id,
+        PlayPrompt = prompt,
+        MaxDurationInSeconds = 60,
+        InitialSilenceTimeoutInSeconds = 5,
+        MaxSilenceTimeoutInSeconds = 4,
+        PlayBeep = true,
+        RecordingFormat = RecordingFormat.Wav,
+        StopTones = new List<char> { '#' }
+    };
+    workflow.Actions = new List<ActionBase> { record };
+}
+````
+
 If the workflow is executed successfully, the Skype Bot Platform for Calling will post a result of last action on given webhook callback HTTPs address. For example, if the last action was to record audio, the result will be a media content with audio data. If the workflow could not be completed, for example because a Skype user hang up the call, then the result will correspond to last executed action.
 
 During a voice call, the bot can decide after each callback on how to continue interaction with Skype user. This allows the bots to drive complex interactions comprising of basic action steps.
@@ -83,29 +155,4 @@ To get more information about how to get started in Bot Builder for .NET and the
 * [Bot Builder for .NET](https://docs.botframework.com/en-us/csharp/builder/sdkreference/index.html)
 * [Building a simple Skype Calling Bot](https://docs.botframework.com/en-us/csharp/builder/sdkreference/calling.html)
 * [Skype Calling API](https://docs.botframework.com/en-us/skype/calling/)
-
-# VoiceBot - Emergency Services IVR Bot
-
-This sample shows how to create a Bot using the Microsoft Bot Framework and use the Skype channel for voice input. 
-
-DTMF tones are used to detect keypad input.  The scenario here is for an Emergency Services Bot where there could
-be different types of services to route through to.  If the situation is non-life threatening a consultant will deal with the call.  However,
-in this example all the consultants are busy (sound familiar?) so you are prompted to leave a voice message.
-
-Microsoft Cognitive Services (Bing Speech Recognition) is used for the speech to text (STT).  The detected speech is then displayed back to the user
-within the conversation.
-
-# This bot uses the following nuget packages:
-
-* Microsoft.Bot.Builder
-* Microsoft.Bold.Builder.Calling
-* Microsoft.Bing.Speech
-
-# To run this bot, follow the below steps
-
-1. Create a new bot on the dev.botframework.com portal
-2. Update the Skype settings of the bot, by enabling audio calls and updating the Calling Webhook
-3. Add your bot to your Skype contacts
-4. Ensure the bot code is running using your bot settings in the web.config
-5. Within Skype Preview, the Call icon should light up - click to begin
 
