@@ -17,7 +17,7 @@ The minimum prerequisites to run this sample are:
 
 Skype Bot Platform for Calling API provides a mechanism for receiving and handling Skype voice calls by bots.
 
-Check out the [`CallController`](CallController#L15) registering the instance of calling bot responsible for handling the calling requests with the [`CallingConversation`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d6/d56/class_microsoft_1_1_bot_1_1_builder_1_1_calling_1_1_calling_conversation.html) module.
+Check out the [`CallController`](Controllers/CallController#L15) registering the instance of calling bot responsible for handling the calling requests with the [`CallingConversation`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d6/d56/class_microsoft_1_1_bot_1_1_builder_1_1_calling_1_1_calling_conversation.html) module.
 
 ````C#
 public CallingController() : base()
@@ -26,7 +26,7 @@ public CallingController() : base()
 }  
 ````
 
-Every time a Skype user places a call to a bot, Skype Bot Platform for Calling will look up the calling url that was used during the configuration of the Skype channel (Calling Webhook) bot and notify the bot about the call. Check out the[`CallController`](CallController#L27) processing a calling request within the the [`CallingConversation`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d6/d56/class_microsoft_1_1_bot_1_1_builder_1_1_calling_1_1_calling_conversation.html) module.
+Every time a Skype user places a call to a bot, Skype Bot Platform for Calling will look up the calling url that was used during the configuration of the Skype channel (Calling Webhook) bot and notify the bot about the call. Check out the[`CallController`](Controllers/CallController#L27) processing a calling request within the the [`CallingConversation`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d6/d56/class_microsoft_1_1_bot_1_1_builder_1_1_calling_1_1_calling_conversation.html) module.
 
 ````C#
 [Route("call")]
@@ -64,6 +64,78 @@ private Task OnPlayPromptCompleted(PlayPromptOutcomeEvent playPromptOutcomeEvent
     SetupInitialMenu(playPromptOutcomeEvent.ResultingWorkflow);
 
     return Task.FromResult(true);
+}
+````
+
+The menu is created using a [`Recognize`](https://docs.botframework.com/en-us/skype/calling#recognize) action and set of [`RecognitionOption`](https://docs.botframework.com/en-us/skype/calling#recognitionoption). It supports speech and DTMF choice-based recognition.
+
+Check out the [`CreateIvrOptions`](IVRBot.cs#L113-L141) method automatizing the creation of the `Recognize` action.
+
+````C#
+private static Recognize CreateIvrOptions(string textToBeRead, int numberOfOptions, bool includeBack)
+{
+    if (numberOfOptions > 9)
+    {
+        throw new Exception("too many options specified");
+    }
+
+    var choices = new List<RecognitionOption>();
+
+    for (int i = 1; i <= numberOfOptions; i++)
+    {
+        choices.Add(new RecognitionOption { Name = Convert.ToString(i), DtmfVariation = (char)('0' + i) });
+    }
+
+    if (includeBack)
+    {
+        choices.Add(new RecognitionOption { Name = "#", DtmfVariation = '#' });
+    }
+
+    var recognize = new Recognize
+    {
+        OperationId = Guid.NewGuid().ToString(),
+        PlayPrompt = GetPromptForText(textToBeRead),
+        BargeInAllowed = true,
+        Choices = choices
+    };
+
+    return recognize;
+}
+````
+
+Once the user choose an option and the recognize is completed, the selection is being processed. 
+
+````C#
+private Task OnRecognizeCompleted(RecognizeOutcomeEvent recognizeOutcomeEvent)
+{
+    var callState = this.callStateMap[recognizeOutcomeEvent.ConversationResult.Id];
+
+    ProcessMainMenuSelection(recognizeOutcomeEvent, callState);
+
+    return Task.FromResult(true);
+}
+````
+
+In this sample there is only a single option that will asks the user to record a message. Check out the [`SetupRecording`](IVRBot.cs#L143-L160) method creating the [`Record`](https://docs.botframework.com/en-us/skype/calling#record) action to record the user audio.
+
+````C#
+private static void SetupRecording(Workflow workflow)
+{
+    var id = Guid.NewGuid().ToString();
+
+    var prompt = GetPromptForText(NoConsultantsMessage);
+    var record = new Record
+    {
+        OperationId = id,
+        PlayPrompt = prompt,
+        MaxDurationInSeconds = 60,
+        InitialSilenceTimeoutInSeconds = 5,
+        MaxSilenceTimeoutInSeconds = 4,
+        PlayBeep = true,
+        RecordingFormat = RecordingFormat.Wav,
+        StopTones = new List<char> { '#' }
+    };
+    workflow.Actions = new List<ActionBase> { record };
 }
 ````
 
