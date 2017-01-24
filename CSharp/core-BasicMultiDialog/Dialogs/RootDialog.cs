@@ -1,4 +1,4 @@
-﻿namespace ConversationFlow.Dialogs
+﻿namespace BasicMultiDialogBot.Dialogs
 {
     using System;
     using System.Threading.Tasks;
@@ -51,7 +51,6 @@
                 from the stack (below). The method passed as the resume parameter is called when the dialog is removed from
                 the stack. */
 
-            /*
             context.Call(new NameDialog(), this.NameDialogResumeAfter);
         }
 
