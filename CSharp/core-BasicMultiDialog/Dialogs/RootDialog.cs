@@ -12,6 +12,8 @@
         private string name;
         private int age;
 
+        /* When a dialog becomes the active dialog on the stack, StartAsync is called and passed the dialog 
+         *  context (used to manage the conversation). */
         public async Task StartAsync(IDialogContext context)
         {
             /* Your bot is always in a state of waiting for a message from the user, either the first 
@@ -20,13 +22,18 @@
              *  
              *  IDialogContext.Wait() makes your bot wait for a message from the user and calls the resume 
              *  method when that message is received. */
+
+            /* Wait until the first message is received from the conversation and call MessageReceviedAsync 
+             *  to process that message. */
             context.Wait(this.MessageReceivedAsync);
         }
 
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
-            /* When the resume method is called, it's passed a IAwaitable<IMessageActivity>, so to get the message
-                you have to await the result. */
+            /* When MessageReceivedAsync is called, it's passed an IAwaitable<IMessageActivity>. To get the message,
+             *  await the result. */
+
+            /* Await the message passed to the conversion to start the dialog flow. */
             var message = await result;
 
             await this.SendWelcomeMessageAsync(context);
@@ -35,12 +42,16 @@
         private async Task SendWelcomeMessageAsync(IDialogContext context)
         {
             /* IDialogContext.PostAsync posts a message to the user in the conversation. */
+
+            /* Post a message to the conversation via the dialog context. */
             await context.PostAsync("Hi, I'm the Basic Multi Dialog bot. Let's get started.");
 
             /* IDialogContext.Call() calls the dialog passed as a paramter and adds it to the top of the stack. Messages 
                 sent from the user will be received by the dialog at the top of the stack until it is removed
                 from the stack (below). The method passed as the resume parameter is called when the dialog is removed from
                 the stack. */
+
+            /*
             context.Call(new NameDialog(), this.NameDialogResumeAfter);
         }
 
