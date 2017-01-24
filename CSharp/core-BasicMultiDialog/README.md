@@ -10,6 +10,7 @@ To run this sample, install the prerequisites by following the steps in the [Get
 
 Dialogs model a conversational process, where the exchange of messages between bot and user is the primary channel for interaction with the outside world.
 Dialogs can be composed with other dialogs to maximize reuse, and a dialog context maintains a stack of dialogs active in the conversation.
+This conversation state (the stack of active dialogs and each dialog's state) is stored in the state service provided by the Bot Connector service, making the bot implementation stateless between requests. (Much like a web application that does not store session state in the web server's memory.)
 
 The [`RootDialog`](Dialogs/RootDialog.cs) class, which represents our conversation, is wired into the `MessageController.Post()` method. Check out the [MessagesController](Controllers/MessagesController.cs#L22) class passing a delegate to the `Conversation.SendAsync()` method that will be used to construct a `RootDialog` and execute the dialog's `StartAsync()` method.
 
