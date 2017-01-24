@@ -1,4 +1,4 @@
-# Middleware Bot Sample
+# Skype Calling Bot Sample
 
 A sample bot showing how to use the Skype Bot Plaform for Calling API for receiving and handling Skype voice calls.
 
