@@ -25,7 +25,7 @@ Let's look at how these concepts are used to manage a simple conversation in a b
 
 When managing a conversation using the Dialog system, the conversation is rooted in a single dialog, often called the Root Dialog. The Root Dialog is the first dialog added to the dialog stack for the conversation. All other dialogs in the conversation are called from the Root Dialog, either directly or indirectly (in the case of a child dialog calling another dialog) and return to the Root Dialog (either directly or indirectly). The Root Dialog doesn't complete until your bot process ends.
 
-To create the [`RootDialog`](Dialogs/RootDialog.cs) class, create a class that is marked with the `[Serializable]` attribute (so the dialog can be serialized to state) and implement the `IDialog` interface. 
+To create the [`RootDialog`](Dialogs/RootDialog.cs) class, create a class that is marked with the `[Serializable]` attribute (so the dialog can be [serialized to state](https://docs.botframework.com/en-us/csharp/builder/sdkreference/dialogs.html#Serialization)) and implement the `IDialog` interface. 
 
 To implement the `IDialog` interface, you implement the `StartAsync()` methond. `StartAsync()` is called when the dialog becomes active. The method is passed the `IDialogContext` object, used to manage the conversation.
 

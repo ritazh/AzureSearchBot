@@ -9,13 +9,19 @@ using Microsoft.Bot.Connector;
 namespace GlobalMessageHandlersBot.Dialogs
 {
     [Serializable]
-    public class NameDialog : IDialog<string>
+    public class AgeDialog : IDialog<int>
     {
+        private string name;
         private int attempts = 3;
+
+        public AgeDialog(string name)
+        {
+            this.name = name;
+        }
 
         public async Task StartAsync(IDialogContext context)
         {
-            await context.PostAsync("What is your name?");
+            await context.PostAsync($"{ this.name }, what is your age?");
 
             context.Wait(this.MessageReceivedAsync);
         }
@@ -24,23 +30,24 @@ namespace GlobalMessageHandlersBot.Dialogs
         {
             var message = await result;
 
-            if ((message.Text != null) && (message.Text.Trim().Length > 0))
-            {
+            int age;
 
-                context.Done(message.Text);
+            if (Int32.TryParse(message.Text, out age) && (age > 0))
+            {
+                context.Done(age);
             }
             else
             {
                 --attempts;
                 if (attempts > 0)
                 {
-                    await context.PostAsync("I'm sorry, I don't understand your reply. What is your name (e.g. 'Bill', 'Melinda')?");
+                    await context.PostAsync("I'm sorry, I don't understand your reply. What is your age (e.g. '42')?");
 
                     context.Wait(this.MessageReceivedAsync);
                 }
                 else
                 {
-                    context.Fail(new TooManyAttemptsException("Message was not a string or was an empty string."));
+                    context.Fail(new TooManyAttemptsException("Message was not a valid age."));
                 }
             }
         }
