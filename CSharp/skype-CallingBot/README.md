@@ -12,6 +12,7 @@ The minimum prerequisites to run this sample are:
    *  Register you bot in [Microsoft Bot Framework Portal](https://dev.botframework.com/bots). Please refer to [this](https://docs.botframework.com/en-us/csharp/builder/sdkreference/gettingstarted.html#registering) for the instructions. Once you complete the registration, update the [Bot's Web.config](Web.config#L10-L12) file with the registered config values (Bot Id, MicrosoftAppId and MicrosoftAppPassword). 
    *  Enable the Skype Channel and update the settings by enabling 1:1 audio cals and updating the Calling Webhook to be `https:://{your domain}/api/calling/call`. Refer to [this](https://docs.botframework.com/en-us/csharp/builder/sdkreference/gettingstarted.html#channels) for more information on how to configure channels. 
    * Update the `Microsoft.Bot.Builder.Calling.CallbackUrl` setting of the [Bot's Web.config](Web.config#L15) file with the callback route `https://{yourdomain}/api/calling/callback`. 
+   * Subscribe to the Microsoft Cognitive Services Bing Speech API [here](https://www.microsoft.com/cognitive-services/en-us/subscriptions) to get a key to use the API. Update the `MicrosoftSpeechApiKey` setting of the [Bot's Web.config](Web.config#L18) with the obtained key.
     
 ### Code Highlights
 
@@ -26,7 +27,7 @@ public CallingController() : base()
 }  
 ````
 
-Every time a Skype user places a call to a bot, Skype Bot Platform for Calling will look up the calling url that was used during the configuration of the Skype channel (Calling Webhook) bot and notify the bot about the call. Check out the[`CallController`](Controllers/CallController.cs#L27) processing a calling request within the the [`CallingConversation`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d6/d56/class_microsoft_1_1_bot_1_1_builder_1_1_calling_1_1_calling_conversation.html) module.
+Every time a Skype user places a call to a bot, Skype Bot Platform for Calling will look up the calling url that was used during the configuration of the Skype channel (Calling Webhook) bot and notify the bot about the call. Check out the[`CallController`](Controllers/CallController.cs#L24-L28) processing a incoming call calling request within the the [`CallingConversation`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d6/d56/class_microsoft_1_1_bot_1_1_builder_1_1_calling_1_1_calling_conversation.html) module.
 
 ````C#
 [Route("call")]
@@ -38,7 +39,23 @@ public async Task<HttpResponseMessage> ProcessIncomingCallAsync()
 
 The bot can provide a list basic actions, called workflow, in response to initial call notification. In the first action of the workflow the bot should decide if it’s interested in answering the call or rejecting the call. Should the bot decide to answer the call, the subsequent actions instruct the Skype Bot Platform for Calling to either play prompt, record audio, recognize speech, or collect digits from a dial pad. The last action of the workflow could be a hang up the voice call. Skype Bot Platform for Calling then takes the workflow and attempts to execute actions in order given by bot.
 
-In the sample, when the incoming call is received, it is answered and the user is presented with a welcome message and new state entry is created for him.
+If the workflow is executed successfully, the Skype Bot Platform for Calling will post a result of last action on the callback url configured in the project's Web.config. For example, if the last action was to record audio, the result will be a media content with audio data. If the workflow could not be completed, for example because a Skype user hang up the call, then the result will correspond to last executed action.
+
+Check out the[`CallController`](Controllers/CallController.cs#L18-L22) processing a calling event request within the the [`CallingConversation`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d6/d56/class_microsoft_1_1_bot_1_1_builder_1_1_calling_1_1_calling_conversation.html) module.
+
+
+````C#
+[Route("callback")]
+public async Task<HttpResponseMessage> ProcessCallingEventAsync()
+{
+    return await CallingConversation.SendAsync(this.Request, CallRequestType.CallingEvent);
+}
+
+````
+
+During a voice call, the bot can decide after each callback on how to continue interaction with Skype user. This allows the bots to drive complex interactions comprising of basic action steps.
+
+In the sample, when the incoming call is received, it is answered and the user is presented with a welcome message and new state entry is created for him. The state also contains the participants of the incoming call, as later on the sample information from them will be used.
 
 ````C#
 private Task OnIncomingCallReceived(IncomingCallEvent incomingCallEvent)
@@ -139,14 +156,98 @@ private static void SetupRecording(Workflow workflow)
 }
 ````
 
-If the workflow is executed successfully, the Skype Bot Platform for Calling will post a result of last action on given webhook callback HTTPs address. For example, if the last action was to record audio, the result will be a media content with audio data. If the workflow could not be completed, for example because a Skype user hang up the call, then the result will correspond to last executed action.
+Once the recording is successfully completed, you will have access to the content recorded by the user.
 
-During a voice call, the bot can decide after each callback on how to continue interaction with Skype user. This allows the bots to drive complex interactions comprising of basic action steps.
+In this sample, the recorded audio is being sent to the [Microsoft Cognitive Services Bing Speech API](https://www.microsoft.com/cognitive-services/en-us/speech-api) to convert the audio to text and then displayed back to the user within the Skype conversation.
 
+````C#
+private async Task OnRecordCompleted(RecordOutcomeEvent recordOutcomeEvent)
+{
+    recordOutcomeEvent.ResultingWorkflow.Actions = new List<ActionBase>
+        {
+            GetPromptForText(EndingMessage),
+            new Hangup { OperationId = Guid.NewGuid().ToString() }
+        };
+
+    // Convert the audio to text
+    if (recordOutcomeEvent.RecordOutcome.Outcome == Outcome.Success)
+    {
+        var record = await recordOutcomeEvent.RecordedContent;
+        string text = await this.GetTextFromAudioAsync(record);
+
+        var callState = this.callStateMap[recordOutcomeEvent.ConversationResult.Id];
+
+        await this.SendSTTResultToUser("We detected the following audio: " + text, callState.Participants);
+    }
+
+    recordOutcomeEvent.ResultingWorkflow.Links = null;
+    this.callStateMap.Remove(recordOutcomeEvent.ConversationResult.Id);
+}
+````
+
+To send the text back to the conversation, the information from the call participants is used to create an `IMessageActivity` that the `ConnectorClient` sends to the ongoing conversation.
+
+````C#
+private async Task SendSTTResultToUser(string text, IEnumerable<Participant> participants)
+{
+    var to = participants.Single(x => x.Originator);
+    var from = participants.First(x => !x.Originator);
+
+    await AgentListener.Resume(to.Identity, to.DisplayName, from.Identity, from.DisplayName, to.Identity, text);
+}
+````
+````C#
+public static async Task Resume(
+    string toId, 
+    string toName, 
+    string fromId, 
+    string fromName, 
+    string conversationId, 
+    string message, 
+    string serviceUrl = "https://skype.botframework.com", 
+    string channelId = "skype")
+{
+    if (!MicrosoftAppCredentials.IsTrustedServiceUrl(serviceUrl))
+    {
+        MicrosoftAppCredentials.TrustServiceUrl(serviceUrl);
+    }
+
+    try
+    {
+        var userAccount = new ChannelAccount(toId, toName);
+        var botAccount = new ChannelAccount(fromId, fromName);
+        var connector = new ConnectorClient(new Uri(serviceUrl));
+
+        IMessageActivity activity = Activity.CreateMessageActivity();
+
+        if (!string.IsNullOrEmpty(conversationId) && !string.IsNullOrEmpty(channelId))
+        {
+            activity.ChannelId = channelId;
+        }
+        else
+        {
+            conversationId = (await connector.Conversations.CreateDirectConversationAsync(botAccount, userAccount)).Id;
+        }
+
+        activity.From = botAccount;
+        activity.Recipient = userAccount;
+        activity.Conversation = new ConversationAccount(id: conversationId);
+        activity.Text = message;
+        activity.Locale = "en-Us";
+        await connector.Conversations.SendToConversationAsync((Activity)activity);
+    }
+    catch (Exception exp)
+    {
+        Debug.WriteLine(exp);
+    }
+}
+````
 
 ### Outcome
 
-You will see the following result ...
+When running the sample, if you send something to the bot, the message will be just echoed. If you call the bot, you will be presented with the menu with a single option. If you press 1, you will be prompted to leave a message which will be recorded, analyzed with the Bing Speech API and displayed back in the conversation.
+
+![Sample Outcome](images/outcome-skype.png)
 
 ### More Information
 
@@ -155,4 +256,4 @@ To get more information about how to get started in Bot Builder for .NET and the
 * [Bot Builder for .NET](https://docs.botframework.com/en-us/csharp/builder/sdkreference/index.html)
 * [Building a simple Skype Calling Bot](https://docs.botframework.com/en-us/csharp/builder/sdkreference/calling.html)
 * [Skype Calling API](https://docs.botframework.com/en-us/skype/calling/)
-
+* [Microsoft Cognitive Services Bing Speech API](https://www.microsoft.com/cognitive-services/en-us/speech-api)

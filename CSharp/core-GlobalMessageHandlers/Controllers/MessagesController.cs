@@ -8,7 +8,7 @@ using System.Web.Http.Description;
 using Microsoft.Bot.Connector;
 using Newtonsoft.Json;
 using Microsoft.Bot.Builder.Dialogs;
-using ConversationFlow.Dialogs;
+using GlobalMessageHandlersBot.Dialogs;
 
 namespace GlobalMessageHandlersBot
 {

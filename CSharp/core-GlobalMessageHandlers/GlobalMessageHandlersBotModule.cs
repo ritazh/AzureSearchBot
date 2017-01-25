@@ -18,7 +18,7 @@ namespace GlobalMessageHandlersBot
                 .InstancePerLifetimeScope();
 
             builder
-                .Register(c => new SettingsScorable(c.Resolve<IDialogStack>()))
+                .Register(c => new CancelScorable(c.Resolve<IDialogStack>()))
                 .As<IScorable<IActivity, double>>()
                 .InstancePerLifetimeScope();
         }
