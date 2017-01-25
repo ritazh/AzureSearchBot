@@ -11,8 +11,6 @@ namespace BasicMultiDialogBot.Dialogs
         private string name;
         private int attempts = 3;
 
-        /* Constructor to initialize the dialog. Use to create reusable dialogs and pass in prompts, 
-            messages when a reply isn't understood, etc. */
         public AgeDialog(string name)
         {
             this.name = name;
@@ -46,8 +44,6 @@ namespace BasicMultiDialogBot.Dialogs
                 }
                 else
                 {
-                    /* Fails the current dialog, removes it from the dialog stack, and returns the exception to the 
-                        parent/calling dialog. */
                     context.Fail(new TooManyAttemptsException("Message was not a valid age."));
                 }
             }

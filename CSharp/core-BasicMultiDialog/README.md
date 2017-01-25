@@ -1,27 +1,55 @@
 # Basic Multi-Dialog Sample
 
-A sample that shows how to use the [Bot Builder for .NET SDK](https://dev.botframework.com/)'s [Dialog](https://docs.botframework.com/en-us/csharp/builder/sdkreference/dialogs.html) system from the  to model a conversation.
+A sample that shows how to use the [Dialog](https://docs.botframework.com/en-us/csharp/builder/sdkreference/dialogs.html) system in the [Bot Builder for .NET SDK](https://dev.botframework.com/)'s  to manage a bot's conversation with the user.
+
+In this sample, we'll use the Dialog system to ask the user their name and age, and reply with their reponses.
 
 ### Prerequisites
 
 To run this sample, install the prerequisites by following the steps in the [Getting Started in .NET](https://docs.botframework.com/en-us/csharp/builder/sdkreference/gettingstarted.html) section of the documentation.
 
-### Code Highlights
+### Overview
 
-The Bot Builder for .NET SDK provides the Dialogs namespace to allows developers to easily model a conversation in the bots they develop. 
-Dialogs are classes that implement the IDialog interface and are used to send and receive messages to and from the conversation. 
+The Bot Builder for .NET SDK provides the Dialogs namespace to allows developers to easily model a conversation in the bots they develop. Dialogs are classes that implement the IDialog interface and are used to send and receive messages to and from the conversation. 
 Dialogs can be simple classes that prompt the user for information and validate the response, or can be more complex conversation flows composed of other dialogs.
 
-All dialogs accept an implementation of the IDialogContext interface, used to managed the context of the conversation. 
-This context object manages the dialog stack, by implementing the IDialogStack interface. 
-The dialog at the top of the stack is the active dialog in the conversation and can:
-•	Post messages to the conversation.
-•	Wait for messages from the conversation, suspending the conversation until the message arrives.
-•	Call children dialogs, pushing them onto the stack and making them the active dialog in the conversation.
-•	Mark them selves as done, popping them from the stack, and passing control back to the parent dialog.
+When a dialog is called, it's passed an instance of the IDialogContext interface. This context object manages the dialog stack, by implementing the [IDialogStack interface](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d1/dc6/interface_microsoft_1_1_bot_1_1_builder_1_1_dialogs_1_1_i_dialog_context.html). When you add a dialog to the stack, it's added to the top of the stack and it becomes the active dialog in the conversation. The active dialog use the dialog context to:
+* Post messages to the conversation.
+* Wait for messages from the conversation, suspending the conversation until the message arrives.
+* Call children dialogs, pushing them onto the stack and making them the active dialog in the conversation.
+* Mark themselves as done, popping them from the stack, and passing control back to the parent dialog.
 
-The [`RootDialog`](Dialogs/RootDialog.cs) class, which represents our conversation, is wired into the `MessageController.Post()` method. Check out the [MessagesController](Controllers/MessagesController.cs#L22) class passing a delegate to the `Conversation.SendAsync()` method that will be used to construct a `RootDialog` and execute the dialog's `StartAsync()` method.
+Let's look at how concepts are used to manage a simple conversation in a bot.
 
+#### Create the Root Dialog
+
+When managing a conversation using the Dialog system, the conversation is rooted in a single dialog, often called the Root Dialog. The Root Dialog is the first dialog added to the dialog stack for the conversation. All other dialogs in the conversation are called from the Root Dialog, either directly or indirectly (in the case of a child dialog calling another dialog) and return to the Root Dialog (either directly or indirectly). The Root Dialog doesn't end until your bot process ends.
+
+To create the [`RootDialog`](Dialogs/RootDialog.cs) class, create a class that is marked with the `[Serializable]` attribute (so the dialog can be serialized to state) and implement the `IDialog` interface. 
+
+To implement the `IDialog` interface, you implement the `StartAsync()` methond. `StartAsync()` is called when the dialog becomes active. The method is passed the 'IDialogContext' object, used to manage the conversation.
+
+To wait for a message from the conversation, call `context.Wait()` and pass it a delegate for the method you want to run when the message is received. When `MessageReceivedAsync()` is called, it's passed the dialog context and an [`IAwaitable`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d9/d4e/interface_microsoft_1_1_bot_1_1_builder_1_1_dialogs_1_1_i_awaitable.html) of type [`IMessageActivity`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/db/d11/_i_message_activity_8cs_source.html). To get the message, await the result.
+
+````C#
+[Serializable]
+public class RootDialog : IDialog<object>
+{
+    public async Task StartAsync(IDialogContext context)
+    {
+        context.Wait(this.MessageReceivedAsync);
+    }
+
+    private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
+    {
+        var message = await result;
+    }
+}	
+````
+
+#### Add the Root Dialog to the Conversation
+
+The RootDialog is added to the conversation in the [`MessageController`](Controllers/MessageController.cs) class via the `Post()` method. In the Post() method, the call to  `Conversation.SendAsync()` creates an instance of the `RootDialog`, adds it to the dialog stack to make it the active dialog, calling the `RootDialog.StartAsync()` method and passing the `Activity`.
 
 ````C#
 public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
@@ -32,116 +60,141 @@ public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
     }
     else
     {
-        this.HandleSystemMessage(activity);
+        HandleSystemMessage(activity);
     }
-
     var response = Request.CreateResponse(HttpStatusCode.OK);
     return response;
-}
+}	
 ````
 
-In the `StartAsync()` method, we are telling the bot to wait for a message from the user and call the `MessageReceivedAsync` resume method when the message ins received.
+At this point, you have a `RootDialog` that's added to the conversation and able to interact with the conversation via `IDialogContext`. Next, you can start creating other dialogs to call in order to manage the conversation with the user.
+
+#### Create Name Dialog.
+
+We'll create a [`NameDialog`](Dialogs/NameDialog.cs) class to ask for the user's name. We'll create the `NameDialog` class just like the `RootDialog` above, but we'll implement `IDialog<string>` to designate that the dialog returns with a string value when done. 
+
+We'll use `context.PostAsync()` to post a prompt to the user in the conversation ("What's your name?"). We'll then wait for a response by `calling context.Wait()`. `MessageReceivedAsync()` will be called when the responding message is received. Note that our bot stops and waits until a message is received.
+
+When `MessageReceivedAsync()` is called, we validate the message to be a valid name by making sure the message has text (vs. an image as an attachment) and that the text isn't empty. If the message is a valid name, our dialog has completed successfully and calls `context.Done()` to pass the name as a string back to the calling dialog.
+
+If the message isn't a valid name, we'll reprompt the user and wait for a response. Note that we're calling `MessageReceivedAsnc()` recursively until we get a valid response or after 3 attempts. After 3 attempts, we let the calling dialog know this dialog failed by calling `context.Fail()` and pass an exception that describes the issue.
+
+Note: All dialogs should limit the number of retries to avoid the bot getting stuck when a user doesn't know how to respond to a prompt.
 
 ````C#
-public async Task StartAsync(IDialogContext context)
+public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
 {
-    context.Wait(this.MessageReceivedAsync);
-}
+    [Serializable]
+    public class NameDialog : IDialog<string>
+    {
+        private int attempts = 3;
+
+        public async Task StartAsync(IDialogContext context)
+        {
+            await context.PostAsync("What is your name?");
+
+            context.Wait(this.MessageReceivedAsync);
+        }
+
+        private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
+        {
+            var message = await result;
+
+            if ((message.Text != null) && (message.Text.Trim().Length > 0))
+            {
+                context.Done(message.Text);
+            }
+            else
+            {
+                --attempts;
+                if (attempts > 0)
+                {
+                    await context.PostAsync("I'm sorry, I don't understand your reply. What is your name (e.g. 'Bill', 'Melinda')?");
+
+                    context.Wait(this.MessageReceivedAsync);
+                }
+                else
+                {
+                    context.Fail(new TooManyAttemptsException("Message was not a string or was an empty string."));
+                }
+            }
+        }
+    }
+}	
 ````
-The Bot Framework comes with a number of built-in prompts encapsulated in the [PromptDialog](https://github.com/Microsoft/BotBuilder/blob/84e0973b7e4473b3a02c4e21233b82f439014c95/CSharp/Library/Microsoft.Bot.Builder/Dialogs/PromptDialog.cs) class, than can be used to collect input from a user.  Check out the [RootDialog](Dialogs/RootDialog.cs#L19-L28) class, in the `MessageReceivedAsync` method the usage of the [`PromptChoice`](https://github.com/Microsoft/BotBuilder/blob/84e0973b7e4473b3a02c4e21233b82f439014c95/CSharp/Library/Microsoft.Bot.Builder/Dialogs/PromptDialog.cs#L548) dialog to asks the user to pick up an option from a list.
+
+The `AgeDialog` works the same way, but validates the reply to be a valid age and implements `IDialog<int>` to return an integer to the calling dialog.
+
+#### Calling Dialogs from RootDialog
+
+To manage the conversation, RootDialog calls the NameDialog and AgeDialog dialogs to get the user's name and age and posts the results to the conversation.
+
+In `SendWelcomeMessageAsync()`, a welcome message is posted to the conversation and the `NameDialog` is added to the dialog stack via a call to `context.Call()`. `NameDialogResumeAfter()` is called when `NameDialog` completes successfully (calling `context.Done()`) or fails (calling `context.Fail()`).
+
+If `NameDialog` completed by calling `context.Done()`, the name is returned as a string and the `AgeDialog` is called. If `NameDialog` completed by calling `context.Fail()`, the exception is caught and the `RootDialog` starts over by calling `SendWelcomeMessageAsync()`.
+
+When the `AgeDialog` completes, `AgeDialogResumeAfter` is called. If `AgeDialog` completed by calling `context.Done()`, the age is returned as an integer and the result of both dialogs is posted on the conversation. If `AgeDialog` completed by calling `context.Fail()`, the exception is caught and handled with a message to the user. 
+
+Note that under either path, `SendWelcomeMessageAsync()` is called, starting the process all over again. This is expected for the `RootDialog`. The RootDialog is the root of all conversation, so it never ends until the bot process ends. 
 
 ````C#
-private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
+private async Task SendWelcomeMessageAsync(IDialogContext context)
 {
-    PromptDialog.Choice(
-        context, 
-        this.AfterChoiceSelected, 
-        new[] { ChangePasswordOption, ResetPasswordOption }, 
-        "What do yo want to do today?", 
-        "I am sorry but I didn't understand that. I need you to select one of the options below",
-        attempts: 2);
+	await context.PostAsync("Hi, I'm the Basic Multi Dialog bot. Let's get started.");
+
+	context.Call(new NameDialog(), this.NameDialogResumeAfter);
 }
-````
 
-Once the user picks an option the `PromptChoice` dialog ends and return the result to the parent dialog (in this case the RootDialog) by calling to the `ResumeAfter<T>` delegate passed when calling to the child dialog.  The `IDialogContext.Call()` method can be used to Call a child dialog and add it to the top of the stack transferring control to the new dialog.
-
-Check out the [`AfterChoiceSelected`](Dialogs/RootDialog.cs#L30-L52) resume method retrieving the user selection and the usage of of `context.Call()` to give control of the conversation to a new dialog depending on the selected option.
-
-````C#
-private async Task AfterChoiceSelected(IDialogContext context, IAwaitable<string> result)
+private async Task NameDialogResumeAfter(IDialogContext context, IAwaitable<string> result)
 {
     try
     {
-        var selection = await result;
+        this.name = await result;
 
-        switch (selection)
-        {
-            case ChangePasswordOption:
-                await context.PostAsync("This functionality is not yet implemented! Try resetting your password.");
-                await this.StartAsync(context);
-                break;
-
-            case ResetPasswordOption:
-                context.Call(new ResetPasswordDialog(), this.AfterResetPassword);
-                break;
-        }
+        context.Call(new AgeDialog(this.name), this.AgeDialogResumeAfter);
     }
     catch (TooManyAttemptsException)
     {
-        await this.StartAsync(context);
+        await context.PostAsync("I'm sorry, I'm having issues understanding you. Let's try again.");
+
+        await this.SendWelcomeMessageAsync(context);
     }
 }
-````
 
-The [`ResetPasswordDialog`](Dialogs/ResetPassword.cs) uses a set of custom Prompts dialogs (classes inheriting from `Prompt<T,U>`) to ask the user for her phone number and her date of birth and validate their input. Prompts implement a retry mechanish and after X attemps they throw a `TooManyAttempsException`. Dialog exceptions can be handled in the `ResumeAfter<T>` delegate passed to the `Call` method
-
-
-
-Once the child dialog finishes the `IDialogContext.Done()` should be called to complete the current dialog and return a result to the parent dialog. 
-
-The sample shows how to handle dialog exceptions by awaiting the result argument within a `try/catch` block and how the  [`ResetPasswordDialog`](Dialogs/ResetPassword.cs#L68) uses `context.Done()` to return if the reset operation was successful or not to the parent dialog
-
-````C#
-private async Task AfterDateOfBirthEntered(IDialogContext context, IAwaitable<DateTime> result)
+private async Task AgeDialogResumeAfter(IDialogContext context, IAwaitable<int> result)
 {
     try
     {
-        var dateOfBirth = await result;
+        this.age = await result;
 
-        if (dateOfBirth != DateTime.MinValue)
-        {
-            await context.PostAsync($"The date of birth you provided is: {dateOfBirth.ToShortDateString()}");
+        await context.PostAsync($"Your name is { name } and your age is { age }.");
 
-            // Add your custom reset password logic here.
-            var newPassword = Guid.NewGuid().ToString().Replace("-", string.Empty);
-
-            await context.PostAsync($"Thanks! Your new password is _{newPassword}_");
-
-            context.Done(true);
-        }
-        else
-        {
-            context.Done(false);
-        }
     }
     catch (TooManyAttemptsException)
     {
-        context.Done(false);
+        await context.PostAsync("I'm sorry, I'm having issues understanding you. Let's try again.");
     }
-}
+    finally
+    {
+        await this.SendWelcomeMessageAsync(context);
+    }
+}	
 ````
-
 
 ### Outcome
 
-You will see the following result in the Bot Framework Emulator when opening and running the sample solution.
+Here's what the conversation looks like in the Bot Framework Emulator when supplying a valid Name and age.
 
-![Sample Outcome](images/outcome.png)
+![Done Outcome](images/doneoutcome.png)
+
+And here's what the convesation looks like when providing invalid responses to the `AgeDialog`.
+
+![Failoutcome](images/failoutcome.PNG)
 
 ### More Information
 
-To get more information about how to get started in Bot Builder for .NET and Conversations please review the following resources:
+For more information on managing the conversation using Dialogs, check out the following resources:
 * [Bot Builder for .NET](https://docs.botframework.com/en-us/csharp/builder/sdkreference/index.html)
 * [Dialogs](https://docs.botframework.com/en-us/csharp/builder/sdkreference/dialogs.html)
 * [IDialogContext Interface](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d1/dc6/interface_microsoft_1_1_bot_1_1_builder_1_1_dialogs_1_1_i_dialog_context.html)
-* [PromptDialog](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d9/d03/class_microsoft_1_1_bot_1_1_builder_1_1_dialogs_1_1_prompt_dialog.html)
+
