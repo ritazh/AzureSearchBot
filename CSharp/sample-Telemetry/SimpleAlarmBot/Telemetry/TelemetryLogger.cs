@@ -86,7 +86,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
             };
 
             var eventTelemetry = BuildEventTelemetry(activity, properties);
-            eventTelemetry.Name = TelemetryEventTypes.LuisIntentReceived;
+            eventTelemetry.Name = TelemetryEventTypes.LuisIntentDialog;
             TelemetryClient.TrackEvent(eventTelemetry);
         }
 
