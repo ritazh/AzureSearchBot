@@ -12,7 +12,7 @@ namespace Bot.Controllers
         [HttpGet]
         // POST api/<controller>
         [Route("api/Payment")]
-        //http://localhost:3979/api/Payment?resume=H4sIAAAAAAAEAEWOUQ6CMAyGmz0YPYHHYCAicAHjiy_KAcqogWSsZOs4nmdzRhLf_n79mv5vAFAxkL8NcEi5MLm5vPD0g3ecCXYJd2nIQZkRnSO7uTRHi8IeVM-ysXNVa30qSlDpYp0Mdd7CMS1GkaXNMssG7chB2kZrncF-Ck8fg9Dw-PtfevUcl9TNsFvJB5SJ3fajxqouh74B-ADTzn_4vgAAAA2&cancel=true&token=EC-01U772690T6522532
+        //Example: http://localhost:3979/api/Payment?resume=H4sIAAAAAAAEAEWOUQ6CMAyGmz0YPYHHYCAicAHjiy_KAcqogWSsZOs4nmdzRhLf_n79mv5vAFAxkL8NcEi5MLm5vPD0g3ecCXYJd2nIQZkRnSO7uTRHi8IeVM-ysXNVa30qSlDpYp0Mdd7CMS1GkaXNMssG7chB2kZrncF-Ck8fg9Dw-PtfevUcl9TNsFvJB5SJ3fajxqouh74B-ADTzn_4vgAAAA2&cancel=true&token=EC-01U772690T6522532
         public async Task<HttpResponseMessage> Payment([FromUri] string resume, [FromUri] string token, [FromUri] string paymentId = null, [FromUri] string PayerID = null, [FromUri] bool cancel = false)
         {
             //Get resumption cookie
@@ -28,11 +28,9 @@ namespace Bot.Controllers
                 var paymentExecution = new PaymentExecution() { payer_id = PayerID };
                 var payment = new Payment() { id = paymentId };
 
-                // Execute the payment.
+                // Execute the payment
                 var executedPayment = payment.Execute(Bot.Utilities.Configuration.GetAPIContext(), paymentExecution);
-
-
-
+                
                 if (executedPayment.state.ToLower() == "approved")
                 {
                     //GetMessage 
