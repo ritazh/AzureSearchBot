@@ -1,10 +1,8 @@
 ﻿using Autofac;
 using GlobalMessageHandlersBot.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Internals;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+using Microsoft.Bot.Builder.Scorables;
+using Microsoft.Bot.Connector;
 
 namespace GlobalMessageHandlersBot
 {
@@ -14,12 +12,14 @@ namespace GlobalMessageHandlersBot
         {
             base.Load(builder);
 
-            builder.RegisterType<SettingsScorable>()
-                .As<IScorable<double>>()
+            builder
+                .Register(c => new SettingsScorable(c.Resolve<IDialogStack>()))
+                .As<IScorable<IActivity, double>>()
                 .InstancePerLifetimeScope();
 
-            builder.RegisterType<CancelScorable>()
-                .As<IScorable<double>>()
+            builder
+                .Register(c => new SettingsScorable(c.Resolve<IDialogStack>()))
+                .As<IScorable<IActivity, double>>()
                 .InstancePerLifetimeScope();
         }
     }
