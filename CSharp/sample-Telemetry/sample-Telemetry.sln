@@ -12,6 +12,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PowerBIReports", "PowerBIRe
 		Solution Items\PowerBIReports\SampleTelemtryReport.pbix = Solution Items\PowerBIReports\SampleTelemtryReport.pbix
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LuisApps", "LuisApps", "{940CAD4F-DD7C-41A5-8E0C-DE9B4775A8E1}"
+	ProjectSection(SolutionItems) = preProject
+		Solution Items\LuisApps\SimpleAlarm.json = Solution Items\LuisApps\SimpleAlarm.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{8CDB5B2E-B51E-4B90-8F89-82A268CB884E}"
+	ProjectSection(SolutionItems) = preProject
+		Readme.md = Readme.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,5 +38,7 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{705B2612-0601-40BB-95ED-669FE79759DB} = {78090FC1-7822-48C8-8189-B606B5491471}
+		{940CAD4F-DD7C-41A5-8E0C-DE9B4775A8E1} = {78090FC1-7822-48C8-8189-B606B5491471}
+		{8CDB5B2E-B51E-4B90-8F89-82A268CB884E} = {78090FC1-7822-48C8-8189-B606B5491471}
 	EndGlobalSection
 EndGlobal
