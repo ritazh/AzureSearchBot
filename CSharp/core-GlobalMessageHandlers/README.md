@@ -109,16 +109,32 @@ The Scroable with the highest score will process the message by the Component ca
             }
         }
 ````
-When the scoring process is complete, we'll free up any resources used in scoring.
+When the scoring process is complete, the calling component calls the DoneAsync() method where any resources used in scoring are freed.
 ````C#
         protected override Task DoneAsync(IActivity item, string state, CancellationToken token)
         {
             return Task.CompletedTask;
         }
 ````
-### Define GlobalMessageHandlersBotModule to Register Scorables w/ Container
+### Create Module to Register Components and Services
+In GlobalMessageHandlersBotModule, we define a Module that registers the SettingsScorable as a Component that provides the IScorable service.
+````C#
+    public class GlobalMessageHandlersBotModule : Module
+    {
+        protected override void Load(ContainerBuilder builder)
+        {
+            base.Load(builder);
 
-### Register Module with Conversation Container via Global ASAX.
+            builder
+                .Register(c => new SettingsScorable(c.Resolve<IDialogStack>()))
+                .As<IScorable<IActivity, double>>()
+                .InstancePerLifetimeScope();
+        }
+    }
+````
+
+### Register Module with the Conversation's Container
+
 
 ### Cancel works the same.
 
