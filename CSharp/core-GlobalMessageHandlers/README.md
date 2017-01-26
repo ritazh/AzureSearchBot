@@ -1,13 +1,10 @@
 # Global Message Handlers Sample
 
-A global message handler allows you to inspect every incoming message to your bot in order to control the conversation by responding to specific commands.
+You can define global message handlers in your bot to respond to modify the conversation whenever the user responds with a specific word anywhere in your bot.
 
-For example, you can define a global command in your bot to add a  
+For example, you could add a settings global command to your bot to show the bot's settings dialog (allowing the user to modify account settings or their preferences) to the dialog stack whenever the user reponds with the word 'settings', and return to the prior dialog when the settings dialog completes. You could also reset the dialog stack and return the user to the Root Dialog whenever the user responds with the word 'cancel' anywhere in your bot.
 
-A sample that shows how to create global messages handlers to launch bot features from anywhere in the bot by using the [Dialog](https://docs.botframework.com/en-us/csharp/builder/sdkreference/dialogs.html) system in the [Bot Builder for .NET SDK](https://dev.botframework.com/).
-
-Settings - Interupts active dialog, when complete returns to the interupted dialog.
-Cancel - Empties the dialog stack and returns the conversation to the RootDialog.
+This sample shows how to create global messages handlers to respond to those global commands anywhere in your bot in order to manipulate the conversation.
 
 ### Prerequisites
 
@@ -19,20 +16,54 @@ This sample is based on the Basic Multi-Dialog Sample, so be sure to review that
 
 The Bot Builder for .NET SDK uses [AutoFac](https://autofac.org/) for [inversion of control and dependency injection](https://martinfowler.com/articles/injection.html). If you're not famililar with AutoFac, you can learn more in this [Quick Start Guide](http://autofac.readthedocs.io/en/latest/getting-started/index.html).
 
-One of the ways BotF using AutoFac is Scroables.
+One of the ways the Bot Builder for .NET SDK uses AutoFac is Scorables. Scorables intercept every message sent to the bot and apply a score to the message based on logic you define. The Scorable with the highest score 'wins' the opportunity to process the message. If no Scroable is found that applies to the message, the message is passed on to the active dialog on the dialog stack.
 
-Scorables - intercept every message in the bot, scored to see if the message should be processed by the Scroable or passed on to the dialog stack.
+You can implement global message handlers by giving high scores to messages that include specific words or phrases so they can be handled by your Scorable rather than the active dialog.
+
+You create a Scorable by createing a class that implements the IScorable interface by inheriting from the ScorableBased abstract class. To have that Scorable applied to every message on the conversation, you define a Module that registers your ScorableBase class as a component that provides the IScorable interface as a Service. Registering that Module with the Conversation's Container will apply your Scorable to all incoming messages in the Conversation.
+
+Let's look at how that's done in the sample.
 
 ### Create the Settings Dialog
-Dialog we'd like to add to the dialog stack whenever the user responds with 'settings' anywhere in the bot.
 
-### Create SettingsScroable Score Incoming Messages
+The [`SettingsDialog`](Dialogs/SettingsDialog.cs) is the dialog we'll add to the dialog stack whenever the user responds with 'settings' in the conversation.
+
+````C#
+    public class SettingsDialog : IDialog<object>
+    {
+        public async Task StartAsync(IDialogContext context)
+        {
+            await context.PostAsync("This is the Settings Dialog. Reply with anything to return to prior dialog.");
+
+            context.Wait(this.MessageReceived);
+        }
+
+        private async Task MessageReceived(IDialogContext context, IAwaitable<IMessageActivity> result)
+        {
+            var message = await result;
+
+            if ((message.Text != null) && (message.Text.Trim().Length > 0))
+            {
+                context.Done<object>(null);
+            }
+            else
+            {
+                context.Fail(new Exception("Message was not a string or was an empty string."));
+            }
+        }
+    }
+````
+
+### Create SettingsScorable
+
+The `SettingsScorable` provides an implementation of the `ScorableBase<Item, State, Score>` abstract class in order to implement the `IScorable<Item, Score> interface. 
+
+, we'll define a global message handler that adds a [`SettingsDialog`](Dialogs/SettingsDialog.cs) (for example, a dialog that allows the user to review/change bot settings from anywhere in the bot) to the dialog stack whenver the user responds with 'settings' anywhere in the bot. When the `SettingsDialog` completes, that dialog is popped off the stack and the prior dialog (the one that was interupted) becomes the active dialog.
 
 IScorable - defined as service to score messages.
 
 Scroable - Implment IScorable as a component with AutoFac.
 
-Explain code flow here.
 
 ### Define GlobalMessageHandlersBotModule to Register Scorables w/ Container
 
