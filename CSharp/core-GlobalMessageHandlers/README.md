@@ -1,10 +1,10 @@
 # Global Message Handlers Sample
 
-You can use the [Bot Builder for .NET SDK](https://dev.botframework.com/) to define global message handlers that execute code whenever the user replies to the conversation with a specific word or phrase.
+A bot can use the [Bot Builder for .NET SDK](https://dev.botframework.com/) to define global message handlers that execute code whenever the user replies to the conversation with a specific word or phrase from anywhere in the bot. These global message handlers allow you to create bot features that are accessible from anywhere in your bot.
 
-For example, you could add a settings command to your bot to show the bot's settings dialog whenever the user reponds with the word 'settings'. Additionally, you could define a cancel command to return the user to the Root Dialog whenever the user responds with the word 'cancel'.
-
-This sample shows how to create global messages handlers to respond to global commands anywhere in your bot.
+This sample shows how to create global message handlers and illustrates two common scenarios:
+* Global Dialogs - A global message handler that responds to a global command to add a dialog to the conversation from anywhere in the bot. In this sample, the settings dialog can be accessed anywhere in the bot by replying with 'settings' anywhere in the bot. When the settings dialog is complete, the conversation returns to the prior dialog. 
+* Stack Manipulation - A global message handler that responds to a global command to manipulate the dialog stack. In this sample, the user is returned to the root dialog whenever the user responds with the word 'cancel' anywhere in the bot.
 
 ### Prerequisites
 
@@ -16,11 +16,9 @@ This sample is based on the Basic Multi-Dialog Sample, so be sure to review that
 
 The Bot Builder for .NET SDK uses [AutoFac](https://autofac.org/) for [inversion of control and dependency injection](https://martinfowler.com/articles/injection.html). If you're not famililar with AutoFac, you can learn more in this [Quick Start Guide](http://autofac.readthedocs.io/en/latest/getting-started/index.html).
 
-One of the ways the Bot Builder for .NET SDK uses AutoFac is Scorables. Scorables intercept every message sent to the bot and apply a score to the message based on logic you define. The Scorable with the highest score 'wins' the opportunity to process the message. If no Scorable is found that applies to the message, the message is passed on to the active dialog on the dialog stack to become part of the conversation.
+One of the ways the Bot Builder for .NET SDK uses AutoFac is Scorables. Scorables intercept every message sent to a Conversation and apply a score to the message based on logic you define. The Scorable with the highest score 'wins' the opportunity to process the message, rather the message being sent to the Conversation. You can implement global message handlers by createing a Scorable for each global command you want to implement in your bot.
 
-You can implement global message handlers by createing a Scorable for each global command you want to implement in your bot.
-
-You create a Scorable by createing a class that implements the [`IScorable`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d2/dd9/interface_microsoft_1_1_bot_1_1_builder_1_1_internals_1_1_scorables_1_1_i_scorable.html) interface by inheriting from the [`ScorableBase`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/de/d7b/class_microsoft_1_1_bot_1_1_builder_1_1_internals_1_1_scorables_1_1_scorable_base.html) abstract class. To have that Scorable applied to every message on the conversation, you define an AutoFac [`Module`](http://autofac.readthedocs.io/en/latest/configuration/modules.html) that registers your `ScorableBase` class as a [`Component`](http://autofac.readthedocs.io/en/latest/configuration/modules.html) and the `IScorable` interface as a [`Service`](http://autofac.readthedocs.io/en/latest/resolve/index.html). Registering that `Module` with the [`Conversation`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d9/de8/class_microsoft_1_1_bot_1_1_builder_1_1_dialogs_1_1_conversation.html)'s `Container` will apply your Scorable to all incoming messages in the `Conversation`.
+To create a Scorable you create a class that implements the [`IScorable`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d2/dd9/interface_microsoft_1_1_bot_1_1_builder_1_1_internals_1_1_scorables_1_1_i_scorable.html) interface by inheriting from the [`ScorableBase`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/de/d7b/class_microsoft_1_1_bot_1_1_builder_1_1_internals_1_1_scorables_1_1_scorable_base.html) abstract class. To have that Scorable applied to every message in the conversation, the bot registers that `IScorable` interface as a [`Service`](http://autofac.readthedocs.io/en/latest/resolve/index.html) with the [`Conversation`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d9/de8/class_microsoft_1_1_bot_1_1_builder_1_1_dialogs_1_1_conversation.html)'s `Container`.  When a new message arrives to the `Conversation`, the `Conversation` passes that message to each implementation of `IScorable` in the `Container` to get a score. The `Container` then passes that message to the `IScorable` with the highest score for processing.
 
 Let's look at how this is done in the sample.
 
@@ -56,7 +54,7 @@ public class SettingsDialog : IDialog<object>
 
 ### Create SettingsScorable
 
-The [`SettingsScorable`](Dialogs/SettingsScorable.cs) provides an implementation of the `ScorableBase` abstract class in order to implement the `IScorable` interface. 
+The [`SettingsScorable`](Dialogs/SettingsScorable.cs) class provides an implementation of the `ScorableBase` abstract class in order to implement the `IScorable` interface. 
 
 In the `PrepareAsync()` method, we inspect the incoming message to see if it matches the text we are looking for ('settings'). If there's a match, we return the message to be used as state for scoring, otherwise we return null (no match). 
 
@@ -116,7 +114,7 @@ protected override Task DoneAsync(IActivity item, string state, CancellationToke
     return Task.CompletedTask;
 }
 ````
-### Create Module to Register Components and Services
+### Create Module to Register IScorable Service
 In [`GlobalMessageHandlersBotModule`](GlobalMessageHandlersBotModule.cs), we define a `Module` that registers the `SettingsScorable` as a Component that provides the `IScorable` service.
 ````C#
 public class GlobalMessageHandlersBotModule : Module
@@ -168,11 +166,15 @@ protected override async Task PostAsync(IActivity item, string state, Cancellati
 
 ### Outcome
 
-Here's what the conversation looks like in the [Bot Framework Emulator](https://docs.botframework.com/en-us/tools/bot-framework-emulator/#navtitle) when replying to the `NameDialog` with 'settings'. Note: When the `SettingsDialog` completes, the `NameDialog` is returned to the top of the dialog stack, so the next reply will respond to the 'What is your name?' prompt.
+Here's what the conversation looks like in the [Bot Framework Emulator](https://docs.botframework.com/en-us/tools/bot-framework-emulator/#navtitle) when replying to the to any dialog with 'settings'. 
+
+Note: When the `SettingsDialog` completes, the `NameDialog` is returned to the top of the dialog stack, so the next reply will be applied to the 'What is your name?' prompt.
 
 ![Settingsoutcome](images/settingsoutcome.png)
 
-Here's what the conversation looks like when replying to a the `AgeDialog` with 'cancel'. Note: When `CancelScorable` is complete, the dialog returns to the [`RootDialog`](Dialogs/RootDialog.cs), which waits for a message from the user ('Hi' below) before showing it's greeting and the first prompt.
+Here's what the conversation looks like when replying to a the `AgeDialog` with 'cancel'. 
+
+Note: When `CancelScorable` is complete, the dialog returns to the [`RootDialog`](Dialogs/RootDialog.cs), which waits for a message from the user ('Hi' below) before showing it's greeting and the first prompt.
 
 ![Canceloutcome](images/canceloutcome.png)
 
