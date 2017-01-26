@@ -56,15 +56,66 @@ The [`SettingsDialog`](Dialogs/SettingsDialog.cs) is the dialog we'll add to the
 
 ### Create SettingsScorable
 
-The `SettingsScorable` provides an implementation of the `ScorableBase<Item, State, Score>` abstract class in order to implement the `IScorable<Item, Score> interface. 
+The `SettingsScorable` provides an implementation of the `ScorableBase<Item, State, Score>` abstract class in order to implement the `IScorable<Item, Score>` interface. 
 
-, we'll define a global message handler that adds a [`SettingsDialog`](Dialogs/SettingsDialog.cs) (for example, a dialog that allows the user to review/change bot settings from anywhere in the bot) to the dialog stack whenver the user responds with 'settings' anywhere in the bot. When the `SettingsDialog` completes, that dialog is popped off the stack and the prior dialog (the one that was interupted) becomes the active dialog.
+In the PrepareAsync() method, we inspect the incoming message to see if it matches the text we are looking for ('settings'). If there's a match, we return the message to be used as state for scoring, otherwise we return null (no match). 
 
-IScorable - defined as service to score messages.
+````C#
+        protected override async Task<string> PrepareAsync(IActivity activity, CancellationToken token)
+        {
+            var message = activity as IMessageActivity;
 
-Scroable - Implment IScorable as a component with AutoFac.
+            if (message != null && !string.IsNullOrWhiteSpace(message.Text))
+            {
+                if (message.Text.Equals("settings", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return message.Text;
+                }
+            }
 
+            return null;
+        }
+````
+The `HasScore()` method is called by the calling component to determine if the Scorable has a score (we have a match).
 
+````C#
+        protected override bool HasScore(IActivity item, string state)
+        {
+            return state != null;
+        }
+````
+The `GetScore()` method is called by the calling component to get the score for this Scorable. This score is compared to all other Scorables with a score. 
+````C#
+        protected override double GetScore(IActivity item, string state)
+        {
+            return 1.0;
+        }
+````
+The Scroable with the highest score will process the message by the Component calling the PostAsync() method. In the PostAsync() method, we add the SettingsDialog to the stack so it will become the active dialog.
+````C#
+        protected override async Task PostAsync(IActivity item, string state, CancellationToken token)
+        {
+            var message = item as IMessageActivity;
+
+            if (message != null)
+            {
+                var settingsDialog = new SettingsDialog();
+
+                var interruption = settingsDialog.Void<object, IMessageActivity>();
+
+                this.stack.Call(interruption, null);
+
+                await this.stack.PollAsync(token);
+            }
+        }
+````
+When the scoring process is complete, we'll free up any resources used in scoring.
+````C#
+        protected override Task DoneAsync(IActivity item, string state, CancellationToken token)
+        {
+            return Task.CompletedTask;
+        }
+````
 ### Define GlobalMessageHandlersBotModule to Register Scorables w/ Container
 
 ### Register Module with Conversation Container via Global ASAX.
