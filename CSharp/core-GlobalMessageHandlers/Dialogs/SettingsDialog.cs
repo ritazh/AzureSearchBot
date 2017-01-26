@@ -21,7 +21,7 @@ namespace GlobalMessageHandlersBot.Dialogs
         {
             var message = await result;
 
-            if (message.Text.Trim().Length > 0)
+            if ((message.Text != null) && (message.Text.Trim().Length > 0))
             {
                 context.Done<object>(null);
             }

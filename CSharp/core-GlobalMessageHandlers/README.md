@@ -1,14 +1,54 @@
 # Global Message Handlers Sample
 
-A sample that shows how to use the [Dialog](https://docs.botframework.com/en-us/csharp/builder/sdkreference/dialogs.html) system in the [Bot Builder for .NET SDK](https://dev.botframework.com/)  to manage a bot's conversation with the user.
+A global message handler allows you to inspect every incoming message to your bot in order to control the conversation by responding to specific commands.
 
-In this sample, we'll use the Dialog system to ask the user their name and age, and reply with their reponses.
+For example, you can define a global command in your bot to add a  
+
+A sample that shows how to create global messages handlers to launch bot features from anywhere in the bot by using the [Dialog](https://docs.botframework.com/en-us/csharp/builder/sdkreference/dialogs.html) system in the [Bot Builder for .NET SDK](https://dev.botframework.com/).
+
+Settings - Interupts active dialog, when complete returns to the interupted dialog.
+Cancel - Empties the dialog stack and returns the conversation to the RootDialog.
 
 ### Prerequisites
 
 To run this sample, install the prerequisites by following the steps in the [Getting Started in .NET](https://docs.botframework.com/en-us/csharp/builder/sdkreference/gettingstarted.html) section of the documentation.
 
+This sample is based on the Basic Multi-Dialog Sample, so be sure to review that sample before getting started with this one.
+
 ### Overview
+
+The Bot Builder for .NET SDK uses [AutoFac](https://autofac.org/) for [inversion of control and dependency injection](https://martinfowler.com/articles/injection.html). If you're not famililar with AutoFac, you can learn more in this [Quick Start Guide](http://autofac.readthedocs.io/en/latest/getting-started/index.html).
+
+One of the ways BotF using AutoFac is Scroables.
+
+Scorables - intercept every message in the bot, scored to see if the message should be processed by the Scroable or passed on to the dialog stack.
+
+### Create the Settings Dialog
+Dialog we'd like to add to the dialog stack whenever the user responds with 'settings' anywhere in the bot.
+
+### Create SettingsScroable Score Incoming Messages
+
+IScorable - defined as service to score messages.
+
+Scroable - Implment IScorable as a component with AutoFac.
+
+Explain code flow here.
+
+### Define GlobalMessageHandlersBotModule to Register Scorables w/ Container
+
+### Register Module with Conversation Container via Global ASAX.
+
+### Cancel works the same.
+
+But resets the stack.
+
+
+
+
+It's often helpful to define global messages within a bot to allow users to access bot features from anywhere in the bot simply by replying with a specific word or phrase. For example, you could allow users to access their settings (account information, preferenes, etc.) anywhere in the bot by responding to any Dialog with the word 'settings'.
+
+In this sample, we'll define two global message handlers that will modify the conversation by changing the [`IDialogStack`](https://docs.botframework.com/en-us/csharp/builder/sdkreference/d1/dc6/interface_microsoft_1_1_bot_1_1_builder_1_1_dialogs_1_1_i_dialog_context.html):
+* Settings - If the user anywhere in the bot with the word 'settings', the message handler
 
 The Bot Builder for .NET SDK provides the Dialogs namespace to allows developers to easily model a conversation in the bots they develop. Dialogs are classes that implement the IDialog interface and are used to manage the messages sent and received from the conversation. 
 Dialogs can be simple classes that prompt the user for information and validate the response, or they can be more complex conversation flows composed of other dialogs.
