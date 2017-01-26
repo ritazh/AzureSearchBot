@@ -61,7 +61,7 @@ bot.dialog('addNumber', [
     // Register cancel for this dialog
     matches: /^cancel/,
     confirmPrompt: 'Are you sure you wish to cancel?',
-}).beginDialogAction('addHelp', 'help', { matches: /help/ });
+}).beginDialogAction('addHelp', 'help', { matches: /^help/ });
 
 bot.dialog('displayTotal', [
     (session, args, next) => {
