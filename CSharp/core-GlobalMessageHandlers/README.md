@@ -134,11 +134,37 @@ In GlobalMessageHandlersBotModule, we define a Module that registers the Setting
 ````
 
 ### Register Module with the Conversation's Container
+In Global.asax.cs, the SettingsScroable can be applied to the Conversation's Container by registering the GlobalMessageHandlersBotModule Module with the Container.
+````C#
+    public class WebApiApplication : System.Web.HttpApplication
+    {
+        protected void Application_Start()
+        {
+            this.RegisterBotModules();
 
+            GlobalConfiguration.Configure(WebApiConfig.Register);
+        }
 
-### Cancel works the same.
+        private void RegisterBotModules()
+        {
+            var builder = new ContainerBuilder();
 
-But resets the stack.
+            builder.RegisterModule(new ReflectionSurrogateModule());
+
+            builder.RegisterModule<GlobalMessageHandlersBotModule>();
+
+            builder.Update(Conversation.Container);
+        }
+    }
+````
+### Implementing CancelScorable
+The CancelScroable is implemented the same way, but will reset the dialog stack when the Scroable is called.
+````C#
+        protected override async Task PostAsync(IActivity item, string state, CancellationToken token)
+        {
+            this.stack.Reset();
+        }
+````
 
 
 
