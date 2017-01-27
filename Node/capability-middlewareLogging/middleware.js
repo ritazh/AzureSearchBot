@@ -1,10 +1,14 @@
+var builder = require('botbuilder');
+
 module.exports = {
-    logIncomingMessage: function (session, next) {
-        if (/^secret/i.test(session.message.text)) {
-            session.send('42');
+    logIncomingMessage: function (event, next, bot) {
+        if (/^secret/i.test(event.text)) {
+            bot.send(new builder.Message()
+            .address(event.address)
+            .text('42'));
             return;
         }
-        console.log(session.message.text);
+        console.log(event.text);
         next();
     },
     logOutgoingMessage: function (event, next) {

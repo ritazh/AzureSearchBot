@@ -18,13 +18,12 @@ var bot = new builder.UniversalBot(connector);
 
 // Middleware for logging
 bot.use({
-    botbuilder: function (session, next) {
-        myMiddleware.logIncomingMessage(session, next);
+    receive: function (event, next) {
+        myMiddleware.logIncomingMessage(event, next, bot);
     },
     send: function (event, next) {
         myMiddleware.logOutgoingMessage(event, next);
     }
-
 })
 
 bot.dialog('/', [
