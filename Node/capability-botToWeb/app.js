@@ -27,14 +27,38 @@ let connector = new builder.ChatConnector({
 });
 
 // A bot listens and reacts to messages that the connector picks up on.
-let bot = new builder.UniversalBot(connector);
+let bot = new builder.UniversalBot(connector, function (session, args) {
+    session.beginDialog('listFines');
+});
+
+// Simple two step dialog to list 'fines' that a user has received, and allow
+// a user to 'pay' them. 
+bot.dialog('listFines', [
+    function (session, args) {
+        console.log('List Fines Dialog');
+        session.send('You have 1 outstanding fine:');
+
+        session.send('Parking Fine Violation');
+        builder.Prompts.choice(session, "What would you like to do?", ["Pay fine", "Cancel"]);
+    },
+    function (session, results, next) {
+        let choice = results.response;
+
+        if (choice.entity === 'Cancel') {
+            return;
+        }
+
+        // Starts the payment flow.
+        createAndSendPayment(session);
+    },
+]);
 
 // We're using restify here to set up an HTTP server, and create some callbacks that Paypal will hit.
 let server = restify.createServer();
 server.use(restify.queryParser());
 
 server.listen(configuration.PORT, function () {
-   console.log('%s listening to %s', server.name, server.url); 
+    console.log('%s listening to %s', server.name, server.url);
 });
 
 // This is a callback that Paypal hits when a user approves a transaction for completion.
@@ -61,7 +85,7 @@ server.post('/api/messages', connector.listen());
  * 
  * See https://developer.paypal.com/docs/api/payments/#payment_create_request for a description of * the fields.
  */
-function createPaymentJson (returnUrl, cancelUrl) {
+function createPaymentJson(returnUrl, cancelUrl) {
     return {
         "intent": "sale",
         "payer": {
@@ -96,7 +120,7 @@ function createPaymentJson (returnUrl, cancelUrl) {
  * 
  * See https://developer.paypal.com/docs/api/payments/#payment_execute_request for a description of * the fields.
  */
-function executePaymentJson (payerId) {
+function executePaymentJson(payerId) {
     return {
         "payer_id": payerId,
         "transactions": [{
@@ -112,7 +136,7 @@ function executePaymentJson (payerId) {
  * Generates a URL that Paypal will redirect to on approval or cancellation 
  * of the payment by the user.
  */
-function createUrl (path, address) {
+function createUrl(path, address) {
     console.log('Creating URL for path: ' + path);
 
     // The address passed in is an Object that defines the context
@@ -137,7 +161,7 @@ function createUrl (path, address) {
 /**
  * Creates a payment on paypal that a user must approve.
  */
-function createAndSendPayment (session) {
+function createAndSendPayment(session) {
     console.log('Creating Payment');
 
     let returnUrl = createUrl('approvalComplete', session.message.address);
@@ -166,7 +190,7 @@ function createAndSendPayment (session) {
 /**
  * When a payment is approved by the user, we can go ahead and execute it.
  */
-function executePayment (parameters) {
+function executePayment(parameters) {
     console.log('Executing an Approved Payment');
 
     // Appended to the URL by PayPal during the approval step.
@@ -196,7 +220,7 @@ function executePayment (parameters) {
  * This function completes the payment dialog by creating a message, binding an address to it, 
  * and sending it.
  */
-function respondToUserSuccess (payment, address) {
+function respondToUserSuccess(payment, address) {
     let message = new builder.Message().address(address).text('Thanks for your payment!');
 
     bot.send(message.toMessage());
@@ -206,7 +230,7 @@ function respondToUserSuccess (payment, address) {
  * If a user chooses to cancel the payment (on the PayPal approval dialog), we should
  * back via the bot.
  */
-function cancelledPayment (parameters) {
+function cancelledPayment(parameters) {
     console.log('Cancelled a payment');
 
     let addressEncoded = decodeURIComponent(parameters.addressEncoded);
@@ -215,36 +239,3 @@ function cancelledPayment (parameters) {
 
     bot.send(message.toMessage());
 }
-
-//=========================================================
-// Bot Dialogs
-//=========================================================
-
-
-// The root dialog of our bot simply just jumpes straight into the
-// business logic of paying a fine.
-bot.dialog('/', function (session, args) {
-        session.beginDialog('listFines');
-});
-
-// Simple two step dialog to list 'fines' that a user has received, and allow
-// a user to 'pay' them. 
-bot.dialog('listFines', [
-    function (session, args) {
-        console.log('List Fines Dialog');
-        session.send('You have 1 outstanding fine:');
-
-        session.send('Parking Fine Violation');
-        builder.Prompts.choice(session, "What would you like to do?", ["Pay fine", "Cancel"]);
-    },
-    function (session, results, next) {
-        let choice = results.response;
-        
-        if (choice.entity === 'Cancel') {
-            return;
-        }
-
-        // Starts the payment flow.
-        createAndSendPayment(session);
-    },
-]);
