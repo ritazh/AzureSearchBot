@@ -6,15 +6,17 @@ const connector = new builder.ChatConnector({
     appPassword: process.env.MICROSOFT_APP_PASSWORD
 });
 
-const bot = module.exports = new builder.UniversalBot(connector);
-
 // In a bot, a conversation can hold a collection of dialogs.
 
 // Each dialog is designed to be a self-contained unit that can
 // perform an action that might take multiple steps, such as collecting
 // information from a user or performing an action on her behalf.
 
-bot.dialog('/', [
+const bot = module.exports = new builder.UniversalBot(connector, [
+    // this section becomes the root dialog
+    // If a conversation hasn't been started, and the message
+    // sent by the user doesn't match a pattern, the
+    // conversation will start here
     (session, args, next) => {
         session.send(`Hi there! I'm a sample bot showing how multiple dialogs work.`);
         session.send(`Let's start the first dialog, which will ask you your name.`);
@@ -22,7 +24,7 @@ bot.dialog('/', [
         // Launch the getName dialog using beginDialog
         // When beginDialog completes, control will be passed
         // to the next function in the waterfall
-        session.beginDialog('/getName');
+        session.beginDialog('getName');
     },
     (session, results, next) => {
         // executed when getName dialog completes
@@ -33,7 +35,7 @@ bot.dialog('/', [
             const name = session.privateConversationData.name = results.response;
 
             // When calling another dialog, you can pass arguments in the second parameter
-            session.beginDialog('/getAge', { name: name });
+            session.beginDialog('getAge', { name: name });
         } else {
             // no valid response received - End the conversation
             session.endConversation(`Sorry, I didn't understand the response. Let's start over.`);
@@ -56,7 +58,7 @@ bot.dialog('/', [
     },
 ]);
 
-bot.dialog('/getName', [
+bot.dialog('getName', [
     (session, args, next) => {
         // store reprompt flag
         if(args) {
@@ -82,7 +84,7 @@ bot.dialog('/getName', [
                 // Call replaceDialog to start the dialog over
                 // This will replace the active dialog on the stack
                 // Send a flag to ensure we only reprompt once
-                session.replaceDialog('/getName', { isReprompt: true });
+                session.replaceDialog('getName', { isReprompt: true });
             }
         } else {
             // Valid name received
@@ -93,7 +95,7 @@ bot.dialog('/getName', [
     }
 ]);
 
-bot.dialog('/getAge', [
+bot.dialog('getAge', [
     (session, args, next) => {
         let name = session.dialogData.name = 'User';
 
@@ -124,7 +126,7 @@ bot.dialog('/getAge', [
                 session.send(`Sorry, that doesn't look right.`);
                 // Call replaceDialog to start the dialog over
                 // This will replace the active dialog on the stack
-                session.replaceDialog('/getAge', 
+                session.replaceDialog('getAge', 
                     { name: session.dialogData.name, isReprompt: true });
             }
         } else {

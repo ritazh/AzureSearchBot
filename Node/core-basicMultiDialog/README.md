@@ -16,11 +16,11 @@ The sample bot contains three dialogs:
 
 ## Adding a dialog to a bot
 
-You add a dialog to a bot, and thus make it available for calling, by using `bot.dialog`, and provide a name, which resembles a route when doing web programming. This is the exact same way you added the root dialog of `/` to your first ever bot.
+You add a dialog to a bot, and thus make it available for calling, by using `bot.dialog`, and provide a name.
 
 ``` javascript
 // add a dialog named getName
-bot.dialog('/getName', [
+bot.dialog('getName', [
     (session, args, next) => {
         // normal bot code here
     }
@@ -37,25 +37,26 @@ Imagine the following code:
 
 ``` javascript
 
-bot.dialog('/', [
+const bot = new builder.UniversalBot(connector, [
+    // sets the default or root dialog
     (session, args, next) => {
-        session.beginDialog('/first');
+        session.beginDialog('first');
     },
     (session, results, next) => {
         // this will be executed when the new dialog on the stack completes
     }
 ]);
 
-bot.dialog('/first', [
+bot.dialog('first', [
     (session, args, next) => {
-        session.replaceDialog('/second');
+        session.replaceDialog('second');
     },
     (session, results, next) => {
         // this will never get called
     }
 ]);
 
-bot.dialog('/second', [
+bot.dialog('second', [
     (session, args, next) => {
         session.endDialog('Control will return to the root');
     }
@@ -74,7 +75,7 @@ When `second` runs, it calls `endDialog`, which removes it from the stack. The o
 
 Dialogs are designed to be independent black boxes. As a result, you should avoid using `privateConversationData` state for storing or passing values. You should, instead, pass arguments by using the second parameter of `beginDialog` or `replaceDialog`. The values you provide will be passed into the dialog.
 
-In the [bot.js](./bot.js) example, we call `session.beginDialog('/getAge', { name: name })`. The `args` parameter will contain the object we pass in.
+In the [bot.js](./bot.js) example, we call `session.beginDialog('getAge', { name: name })`. The `args` parameter will contain the object we pass in.
 
 ## Ending dialogs
 
