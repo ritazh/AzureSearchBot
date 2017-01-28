@@ -10,6 +10,7 @@ The minimum prerequisites to run this sample are:
 * Enable the Web Chat channel, edit the settings 
 
   ![ChatWidget Channel](images/chatwidget-channel.png) 
+  
   and add a new site to get the Web Chat Embed code. 
 
    ![ChatWidget Token](images/chatwidget-token.PNG)
