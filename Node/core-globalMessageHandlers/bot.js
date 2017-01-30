@@ -1,3 +1,4 @@
+'use strict';
 const builder = require('botbuilder');
 
 const connector = new builder.ChatConnector({
@@ -5,68 +6,94 @@ const connector = new builder.ChatConnector({
     appPassword: process.env.MICROSOFT_APP_PASSWORD
 });
 
-const bot = new builder.UniversalBot(connector, (session, args, next) => {
-    // default message
-    session.send('Say "add" to start adding numbers.');
-});
-
-// global help
-bot.dialog('help', [
+const bot = module.exports = new builder.UniversalBot(connector, [
     (session, args, next) => {
-        // args.action is the name of the action being called
-        // this is a very useful technique to centralize logic
-        switch(args.action) {
-            default:
-                // no action, provide default help message
-                session.endDialog(`I'm a simple calculator bot. I can add numbers if you type "add".`);
-            case 'addHelp':
-                // addHelp action. Provide help for add
-                session.endDialog('Adds numbers. You can type "help" to get this message or "total" to see the total and start over.');
-        }
-    }
-]).triggerAction({ 
-    // registered to respond globally to the word "help"
-    matches: /^help/,
-    onSelectAction: (session, args, next) => {
-        // By default, the flow is interrupted and dialog stack is reset
-        // This allows us to push a new dialog onto the stack and resume
-        session.beginDialog('help', args);
-    }
-});
-
-bot.dialog('addNumber', [
-    (session, args, next) => {
-        if(!session.privateConversationData.runningTotal) {
-            session.privateConversationData.runningTotal = 0;
-            builder.Prompts.number(session, `I'll add all the numbers you give me. Give me the first number.`);
+        session.send(`Hi there! I'm a sample bot showing how multiple dialogs work.`);
+        session.send(`Let's start the first dialog, which will ask you your name.`);
+        session.beginDialog('getName');
+    },
+    (session, results, next) => {
+        if (results.response) {
+            const name = session.privateConversationData.name = results.response;
+            session.beginDialog('getAge', { name: name });
         } else {
-            builder.Prompts.number(session, [`Give me the next one.`, `What's the next number?`, `Give me another.`]);            
+            session.endConversation(`Sorry, I didn't understand the response. Let's start over.`);
         }
     },
     (session, results, next) => {
-        // retrieve the running total and new number
-        let runningTotal = parseInt(session.privateConversationData.runningTotal);
-        const newNumber = parseInt(results.response);
-
-        // update the running total in privateConversationData
-        session.privateConversationData.runningTotal = runningTotal += newNumber;
-
-        // restart dialog to get the next number
-        session.replaceDialog('addNumber');
+        if (results.response) {
+            const age = session.privateConversationData.age = results.response;
+            const name = session.privateConversationData.name;
+            session.endConversation(`Hello ${name}. You are ${age}`);
+        } else {
+            session.endConversation(`Sorry, I didn't understand the response. Let's start over.`);
+        }
     },
-]).triggerAction({
-    // Registers global handler for **this** dialog
-    matches: /^add/
-}).cancelAction('cancel', 'Operation cancelled', {
-    // Register cancel for this dialog
-    matches: /^cancel/,
-    confirmPrompt: 'Are you sure you wish to cancel?',
-}).beginDialogAction('addHelp', 'help', { matches: /^help/ });
+]);
 
-bot.dialog('displayTotal', [
+bot.dialog('getName', [
     (session, args, next) => {
-        session.endConversation(`The total is ${session.privateConversationData.runningTotal}`);
+        if(args) {
+            session.dialogData.isReprompt = args.isReprompt;
+        }
+        builder.Prompts.text(session, 'What is your name?');
+    },
+    (session, results, next) => {
+        const name = results.response;
+        if (!name || name.trim().length < 3) {
+            if (session.dialogData.isReprompt) {
+                session.endDialogWithResult({ response: '' });
+            } else {
+                session.send('Sorry, name must be at least 3 characters.');
+                session.replaceDialog('getName', { isReprompt: true });
+            }
+        } else {
+            session.endDialogWithResult({ response: name.trim() });
+        }
     }
-]).triggerAction({ matches: /^total/ });
+]);
 
-module.exports = bot;
+bot.dialog('getAge', [
+    (session, args, next) => {
+        let name = session.dialogData.name = 'User';
+        if (args) {
+            session.dialogData.isReprompt = args.isReprompt;
+            name = session.dialogData.name = args.name;
+        }
+        builder.Prompts.number(session, `How old are you, ${name}?`);
+    },
+    (session, results, next) => {
+        const age = results.response;
+        if (!age || age < 13 || age > 90) {
+            if (session.dialogData.isReprompt) {
+                session.endDialogWithResult({ response: '' });
+            } else {
+                session.dialogData.didReprompt = true;
+                session.send(`Sorry, that doesn't look right.`);
+                session.replaceDialog('getAge', 
+                    { name: session.dialogData.name, isReprompt: true });
+            }
+        } else {
+            session.endDialogWithResult({ response: age });
+        }
+    }
+]);
+
+bot.dialog('help', (session, args, next) => {
+    // send help message to the user and end this dialog
+    session.endDialog('This is a simple bot that collects a name and age.');
+}).triggerAction({
+    matches: /^help$/,
+    onSelectAction: (session, args, next) => {
+        // overrides default behavior of replacing the dialog stack
+        // This will add the help dialog to the stack
+        session.beginDialog(args.action, args);
+    }
+});
+
+bot.dialog('cancel', (session, args, next) => {
+    // end the conversation to cancel the operation
+    session.endConversation('Operation canceled');
+}).triggerAction({
+    matches: /^cancel$/
+});
