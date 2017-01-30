@@ -1,9 +1,45 @@
-﻿using System;
-
-namespace Assets.BotDirectLine
+﻿namespace Assets.BotDirectLine
 {
+    using System;
+
     public class MessageActivity
-    {   
+    {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        public MessageActivity()
+        {
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="fromId"></param>
+        /// <param name="text"></param>
+        /// <param name="channelId"></param>
+        /// <param name="timestampString"></param>
+        /// <param name="fromName"></param>
+        /// <param name="conversationId"></param>
+        /// <param name="replyToId"></param>
+        public MessageActivity(string fromId, string text, string channelId, string timestampString = null, string fromName = null, string conversationId = null, string replyToId = null)
+        {
+            if (string.IsNullOrEmpty(timestampString))
+            {
+                this.Timestamp = DateTime.Now;
+            }
+            else
+            {
+                this.Timestamp = Convert.ToDateTime(timestampString);
+            }
+
+            this.ChannelId = channelId;
+            this.FromId = fromId;
+            this.FromName = fromName;
+            this.ConversationId = conversationId;
+            this.Text = text;
+            this.ReplyToId = replyToId;
+        }
+
         public DateTime Timestamp
         {
             get;
@@ -52,43 +88,6 @@ namespace Assets.BotDirectLine
             set;
         }
 
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        public MessageActivity()
-        {
-        }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="fromId"></param>
-        /// <param name="text"></param>
-        /// <param name="channelId"></param>
-        /// <param name="timestampString"></param>
-        /// <param name="fromName"></param>
-        /// <param name="conversationId"></param>
-        /// <param name="replyToId"></param>
-        public MessageActivity(string fromId, string text, string channelId,
-            string timestampString = null, string fromName = null, string conversationId = null, string replyToId = null)
-        {
-            if (string.IsNullOrEmpty(timestampString))
-            {
-                Timestamp = DateTime.Now;
-            }
-            else
-            {
-                Timestamp = Convert.ToDateTime(timestampString);
-            }
-
-            ChannelId = channelId;
-            FromId = fromId;
-            FromName = fromName;
-            ConversationId = conversationId;
-            Text = text;
-            ReplyToId = replyToId;
-        }
-
         public static MessageActivity FromJson(SimpleJSON.JSONNode activityJsonRootNode)
         {
             MessageActivity messageActivity = new MessageActivity();
@@ -121,19 +120,19 @@ namespace Assets.BotDirectLine
         {
             string asJsonString =
                 "{ \"" + BotJsonProtocol.KeyActivityType + "\": \"" + BotJsonProtocol.KeyMessage + "\", \""
-                + BotJsonProtocol.KeyChannelId + "\": \"" + ChannelId + "\", \""
+                + BotJsonProtocol.KeyChannelId + "\": \"" + this.ChannelId + "\", \""
                 + BotJsonProtocol.KeyFrom + "\": { \""
-                    + BotJsonProtocol.KeyId + "\": \"" + FromId
-                    + (string.IsNullOrEmpty(FromName) ? "" : ("\", \"" + BotJsonProtocol.KeyName + "\": \"" + FromName))
+                    + BotJsonProtocol.KeyId + "\": \"" + this.FromId
+                    + (string.IsNullOrEmpty(this.FromName) ? string.Empty : ("\", \"" + BotJsonProtocol.KeyName + "\": \"" + this.FromName))
                 + "\" }, \""
-                + BotJsonProtocol.KeyText + "\": \"" + Text + "\" }";
+                + BotJsonProtocol.KeyText + "\": \"" + this.Text + "\" }";
 
             return asJsonString;
         }
 
         public override string ToString()
         {
-            return ToJsonString();
+            return this.ToJsonString();
         }
     }
 }

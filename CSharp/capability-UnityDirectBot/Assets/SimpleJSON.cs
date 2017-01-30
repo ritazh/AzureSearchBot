@@ -42,14 +42,13 @@
  *   It's not the most efficient way but for a moderate amount of data it should work on all platforms.
  * 
  * * * * */
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
- 
- 
 namespace SimpleJSON
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+
     public enum JSONBinaryTag
     {
         Array            = 1,

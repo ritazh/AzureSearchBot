@@ -1,36 +1,27 @@
-﻿using Assets.BotDirectLine;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Linq;
+using Assets.BotDirectLine;
 using UnityEngine;
-using System.Linq;
 using UnityEngine.UI;
 
 public class BotInitializer : MonoBehaviour
 {
-    public Text ConsoleText;
+    public Text BotConsoleText;
+    public Text UserConsoleText;
 
-    private ConversationState _conversationState = new ConversationState();
+    private const string UserToBotMessage = "Hello bot!";
+    private ConversationState conversationState = new ConversationState();
 
     // Use this for initialization
-    void Start () {
-        BotDirectLineManager.Initialize("wUTenxJ6CoU.cwA.QA4.SbNWwPq0RuW02uVqO6lExf7mJr4_jh_VA7Ed78AgMrg");
-        BotDirectLineManager.Instance.BotResponse += OnBotResponse;
+    public void Start()
+    {
+        BotDirectLineManager.Initialize("YourDirectLineToken");
+        BotDirectLineManager.Instance.BotResponse += this.OnBotResponse;
 
-        if (_conversationState.ConversationId == null)
+        if (this.conversationState.ConversationId == null)
         {
-            StartCoroutine(BotDirectLineManager.Instance.StartConversationCoroutine());
+            this.StartCoroutine(BotDirectLineManager.Instance.StartConversationCoroutine());
         }
     }
-
-	// Update is called once per frame
-	void Update () {
-        if (_conversationState.ConversationId != null && string.IsNullOrEmpty(_conversationState.PreviouslySentMessageId))
-        {
-            _conversationState.PreviouslySentMessageId = "ddd";
-
-            StartCoroutine(BotDirectLineManager.Instance.SendMessageCoroutine(_conversationState.ConversationId, "UnityUserId", "Hello bot!", "Unity User 1"));
-        }
-	}
 
     private void OnBotResponse(object sender, Assets.BotDirectLine.BotResponseEventArgs e)
     {
@@ -40,20 +31,36 @@ public class BotInitializer : MonoBehaviour
         {
             case EventTypes.ConversationStarted:
                 // Store the ID
-                _conversationState.ConversationId = e.ConversationId;
+                this.conversationState.ConversationId = e.ConversationId;
+                this.StartCoroutine(BotDirectLineManager.Instance.SendMessageCoroutine(this.conversationState.ConversationId, "UnityUserId", UserToBotMessage, "Unity User 1"));
+
                 break;
             case EventTypes.MessageSent:
-                if (!string.IsNullOrEmpty(_conversationState.ConversationId))
+                if (!string.IsNullOrEmpty(this.conversationState.ConversationId))
                 {
+                    this.conversationState.PreviouslySentMessageId = e.SentMessageId;
+                    if (this.UserConsoleText != null)
+                    {
+                        this.UserConsoleText.text = string.Format("You said: {0}!", UserToBotMessage);
+                    }
+
                     // Get the bot's response(s)
-                    StartCoroutine(BotDirectLineManager.Instance.GetMessagesCoroutine(_conversationState.ConversationId));
+                    this.StartCoroutine(BotDirectLineManager.Instance.GetMessagesCoroutine(this.conversationState.ConversationId));
                 }
 
                 break;
             case EventTypes.MessageReceived:
-                ConsoleText.text = string.Join(" -- ", e.Messages.Select(x => x.Text).ToArray());
-                _conversationState.PreviouslySentMessageId = string.Empty;
                 // Handle the received message(s)
+                if (this.BotConsoleText != null)
+                {
+                    var message = e.Messages.FirstOrDefault(x => x.ReplyToId == this.conversationState.PreviouslySentMessageId);
+
+                    if (message != null) 
+                    {
+                        this.BotConsoleText.text = string.Format("Bot said: {0}", message.Text);
+                    }
+                }
+
                 break;
             case EventTypes.Error:
                 // Handle the error

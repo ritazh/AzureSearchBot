@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Assets.BotDirectLine
+﻿namespace Assets.BotDirectLine
 {
+    using System;
+    using System.Collections.Generic;
+
     public enum EventTypes
     {
         None,
@@ -14,6 +14,12 @@ namespace Assets.BotDirectLine
 
     public class BotResponseEventArgs : EventArgs
     {
+        public BotResponseEventArgs()
+        {
+            this.EventType = EventTypes.None;
+            this.Messages = new List<MessageActivity>();
+        }
+
         public EventTypes EventType
         {
             get;
@@ -62,50 +68,44 @@ namespace Assets.BotDirectLine
             private set;
         }
 
-        public BotResponseEventArgs()
-        {
-            EventType = EventTypes.None;
-            Messages = new List<MessageActivity>();
-        }
-
         public override string ToString()
         {
-            string retval = "[Event type: " + EventType;
+            string retval = "[Event type: " + this.EventType;
 
-            if (!string.IsNullOrEmpty(SentMessageId))
+            if (!string.IsNullOrEmpty(this.SentMessageId))
             {
-                retval += "; ID of message sent: " + SentMessageId;
+                retval += "; ID of message sent: " + this.SentMessageId;
             }
 
-            if (!string.IsNullOrEmpty(Code))
+            if (!string.IsNullOrEmpty(this.Code))
             {
-                retval += "; Code: " + Code;
+                retval += "; Code: " + this.Code;
             }
 
-            if (!string.IsNullOrEmpty(Message))
+            if (!string.IsNullOrEmpty(this.Message))
             {
-                retval += "; Message: " + Message;
+                retval += "; Message: " + this.Message;
             }
 
-            if (!string.IsNullOrEmpty(ConversationId))
+            if (!string.IsNullOrEmpty(this.ConversationId))
             {
-                retval += "; Conversation ID: " + ConversationId;
+                retval += "; Conversation ID: " + this.ConversationId;
             }
 
-            if (!string.IsNullOrEmpty(Watermark))
+            if (!string.IsNullOrEmpty(this.Watermark))
             {
-                retval += "; Watermark: " + Watermark;
+                retval += "; Watermark: " + this.Watermark;
             }
 
-            if (Messages.Count > 0)
+            if (this.Messages.Count > 0)
             {
                 retval += "; Messages: ";
 
-                for (int i = 0; i < Messages.Count; ++i)
+                for (int i = 0; i < this.Messages.Count; ++i)
                 {
-                    retval += "\"" + Messages[i] + "\"";
+                    retval += "\"" + this.Messages[i] + "\"";
 
-                    if (i < Messages.Count - 1)
+                    if (i < this.Messages.Count - 1)
                     {
                         retval += ", ";
                     }

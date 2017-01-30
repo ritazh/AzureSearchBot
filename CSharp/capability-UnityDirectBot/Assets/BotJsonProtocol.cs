@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Assets.BotDirectLine
+﻿namespace Assets.BotDirectLine
 {
     public class BotJsonProtocol
     {

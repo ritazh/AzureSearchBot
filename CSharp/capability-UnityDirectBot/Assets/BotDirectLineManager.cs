@@ -1,10 +1,10 @@
-﻿using UnityEngine;
+﻿using System;
 using System.Collections;
-using System;
-using UnityEngine.Networking;
+using System.Text;
 using Assets.BotDirectLine;
 using SimpleJSON;
-using System.Text;
+using UnityEngine;
+using UnityEngine.Networking;
 
 public class BotDirectLineManager
 {
@@ -13,47 +13,40 @@ public class BotDirectLineManager
     private const string DirectLineActivitiesApiUriPostfix = "activities";
     private const string DirectLineChannelId = "directline";
 
-    private enum WebRequestMethods
-    {
-        Get,
-        Post
-    }
-
-    public event EventHandler<BotResponseEventArgs> BotResponse;
-
-    private static BotDirectLineManager _instance;
-    public static BotDirectLineManager Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                _instance = new BotDirectLineManager();
-            }
-
-            return _instance;
-        }
-    }
-
-    public bool IsInitialized
-    {
-        get;
-        private set;
-    }
-
-    private string SecretKey
-    {
-        get;
-        set;
-    }
+    private static BotDirectLineManager instance;
 
     /// <summary>
     /// Constructor.
     /// </summary>
     private BotDirectLineManager()
     {
-        IsInitialized = false;
+        this.IsInitialized = false;
     }
+
+    public event EventHandler<BotResponseEventArgs> BotResponse;
+
+    public enum WebRequestMethods
+    {
+        Get,
+        Post
+    }
+
+    public static BotDirectLineManager Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = new BotDirectLineManager();
+            }
+
+            return instance;
+        }
+    }
+
+    public bool IsInitialized { get; private set; }
+
+    private string SecretKey { get; set; }
 
     /// <summary>
     /// Initializes this instance by setting the bot secret.
@@ -71,38 +64,35 @@ public class BotDirectLineManager
         instance.IsInitialized = true;
     }
 
-    /// <summary>
-    /// Starts a new conversation with the bot.
-    /// </summary>
-    /// <returns></returns>
-    public IEnumerator StartConversationCoroutine()
+    public IEnumerator SendMessageCoroutine(WebRequestMethods verb, string url, string content = null)
     {
-        if (IsInitialized)
+        if (this.IsInitialized)
         {
-            UnityWebRequest webRequest = CreateWebRequest(WebRequestMethods.Post, DirectLineConversationsApiUri);
-
-            yield return webRequest.Send();
-
-            if (webRequest.isError)
+            using (UnityWebRequest webRequest = this.CreateWebRequest(verb, url, content))
             {
-                Debug.Log("Web request failed: " + webRequest.error);
-            }
-            else
-            {
-                string responseAsString = webRequest.downloadHandler.text;
+                yield return webRequest.Send();
 
-                if (!string.IsNullOrEmpty(responseAsString))
+                if (webRequest.isError)
                 {
-                    BotResponseEventArgs eventArgs = CreateBotResponseEventArgs(responseAsString);
-
-                    if (BotResponse != null)
-                    {
-                        BotResponse.Invoke(this, eventArgs);
-                    }
+                    Debug.Log("Web request failed: " + webRequest.error);
                 }
                 else
                 {
-                    Debug.Log("Received an empty response");
+                    string responseAsString = webRequest.downloadHandler.text;
+
+                    if (!string.IsNullOrEmpty(responseAsString))
+                    {
+                        BotResponseEventArgs eventArgs = this.CreateBotResponseEventArgs(responseAsString);
+
+                        if (this.BotResponse != null)
+                        {
+                            this.BotResponse.Invoke(this, eventArgs);
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("Received an empty response");
+                    }
                 }
             }
         }
@@ -111,6 +101,15 @@ public class BotDirectLineManager
             Debug.Log("Bot Direct Line manager is not initialized");
             yield return null;
         }
+    }
+
+    /// <summary>
+    /// Starts a new conversation with the bot.
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerator StartConversationCoroutine()
+    {
+        return this.SendMessageCoroutine(WebRequestMethods.Post, DirectLineConversationsApiUri);
     }
 
     /// <summary>
@@ -128,48 +127,10 @@ public class BotDirectLineManager
             throw new ArgumentException("Conversation ID cannot be null or empty");
         }
 
-        if (IsInitialized)
-        {
-            Debug.Log("SendMessageCoroutine: " + conversationId + "; " + message);
+        string url = string.Format("{0}/{1}/{2}", DirectLineConversationsApiUri, conversationId, DirectLineActivitiesApiUriPostfix);
+        string content = new MessageActivity(fromId, message, DirectLineChannelId, null, fromName).ToJsonString();
 
-            UnityWebRequest webRequest = CreateWebRequest(
-                WebRequestMethods.Post,
-                DirectLineConversationsApiUri
-                + "/" + conversationId
-                + "/" + DirectLineActivitiesApiUriPostfix,
-                new MessageActivity(fromId, message, DirectLineChannelId, null, fromName).ToJsonString());
-
-            yield return webRequest.Send();
-
-            if (webRequest.isError)
-            {
-                Debug.Log("Web request failed: " + webRequest.error);
-            }
-            else
-            {
-                string responseAsString = webRequest.downloadHandler.text;
-
-                if (!string.IsNullOrEmpty(responseAsString))
-                {
-                    //Debug.Log("Received response:\n" + responseAsString);
-                    BotResponseEventArgs eventArgs = CreateBotResponseEventArgs(responseAsString);
-
-                    if (BotResponse != null)
-                    {
-                        BotResponse.Invoke(this, eventArgs);
-                    }
-                }
-                else
-                {
-                    Debug.Log("Received an empty response");
-                }
-            }
-        }
-        else
-        {
-            Debug.Log("Bot Direct Line manager is not initialized");
-            yield return null;
-        }
+        return this.SendMessageCoroutine(WebRequestMethods.Post, url, content);
     }
 
     /// <summary>
@@ -185,45 +146,18 @@ public class BotDirectLineManager
             throw new ArgumentException("Conversation ID cannot be null or empty");
         }
 
-        if (IsInitialized)
+        if (this.IsInitialized)
         {
             Debug.Log("GetMessagesCoroutine: " + conversationId);
 
-            string uri = DirectLineConversationsApiUri
-                + "/" + conversationId
-                + "/" + DirectLineActivitiesApiUriPostfix;
+            string uri = string.Format("{0}/{1}/{2}", DirectLineConversationsApiUri, conversationId, DirectLineActivitiesApiUriPostfix);
 
             if (!string.IsNullOrEmpty(watermark))
             {
                 uri += "?" + BotJsonProtocol.KeyWatermark + "=" + watermark;
             }
 
-            UnityWebRequest webRequest = CreateWebRequest(WebRequestMethods.Get, uri);
-            yield return webRequest.Send();
-
-            if (webRequest.isError)
-            {
-                Debug.Log("Web request failed: " + webRequest.error);
-            }
-            else
-            {
-                string responseAsString = webRequest.downloadHandler.text;
-
-                if (!string.IsNullOrEmpty(responseAsString))
-                {
-                    //Debug.Log("Received response:\n" + responseAsString);
-                    BotResponseEventArgs eventArgs = CreateBotResponseEventArgs(responseAsString);
-
-                    if (BotResponse != null)
-                    {
-                        BotResponse.Invoke(this, eventArgs);
-                    }
-                }
-                else
-                {
-                    Debug.Log("Received an empty response");
-                }
-            }
+            yield return this.SendMessageCoroutine(WebRequestMethods.Get, uri);
         }
         else
         {
@@ -241,12 +175,10 @@ public class BotDirectLineManager
     /// <returns>A newly created UnityWebRequest instance.</returns>
     private UnityWebRequest CreateWebRequest(WebRequestMethods webRequestMethod, string uri, string content = null)
     {
-        Debug.Log("CreateWebRequest: " + webRequestMethod + "; " + uri + (string.IsNullOrEmpty(content) ? "" : ("; " + content)));
+        Debug.Log("CreateWebRequest: " + webRequestMethod + "; " + uri + (string.IsNullOrEmpty(content) ? string.Empty : ("; " + content)));
 
-        UnityWebRequest webRequest = new UnityWebRequest();
-
-        webRequest.url = uri;
-        webRequest.SetRequestHeader("Authorization", "Bearer " + SecretKey);
+        UnityWebRequest webRequest = new UnityWebRequest(uri);
+        webRequest.SetRequestHeader("Authorization", "Bearer " + this.SecretKey);
 
         if (webRequestMethod == WebRequestMethods.Get)
         {
@@ -259,7 +191,7 @@ public class BotDirectLineManager
 
         if (!string.IsNullOrEmpty(content))
         {
-            webRequest.uploadHandler = new UploadHandlerRaw(Utf8StringToByteArray(content));
+            webRequest.uploadHandler = new UploadHandlerRaw(this.Utf8StringToByteArray(content));
         }
 
         webRequest.downloadHandler = new DownloadHandlerBuffer();
