@@ -129,11 +129,6 @@
     <AndroidResource Include="Resources\drawable\Icon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
-  <ItemGroup>
-    <AndroidAsset Include="__2Assets\default.css" />
-    <AndroidAsset Include="__2Assets\local.html" />
-    <AndroidAsset Include="__2Assets\XamarinLogo.png" />
-  </ItemGroup>
   <ItemGroup />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
