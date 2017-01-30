@@ -18,6 +18,8 @@ namespace GlobalMessageHandlersBot
         {
             var builder = new ContainerBuilder();
 
+
+
             builder.RegisterModule(new ReflectionSurrogateModule());
 
             builder.RegisterModule<GlobalMessageHandlersBotModule>();
