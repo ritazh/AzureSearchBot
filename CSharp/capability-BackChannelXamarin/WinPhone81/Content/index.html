@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Bot Chat</title>
+    <link href="botchat.css" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <style>
+        .wc-chatview-panel {
+            width: 320px;
+            height: 500px;
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="header"></div>
+    <h2 style="font-family:Segoe UI;">Send a message and I will try to get your location using the native capabilities of the WP8.1 platform</h2>
+    <div id="BotChatGoesHere"></div>
+    <div id="debug"></div>
+
+    <script src="botchat.js"></script>
+
+    <script>
+        document.querySelector('#header').innerHTML = "Header";
+        if (window.BotChat) {
+            document.querySelector('#header').innerHTML = "BotChat defined";
+        }
+    </script>
+    <script>
+        var params = { s: 'YourSecretHere' };
+
+        var user = {
+            id: params['userid'] || 'userid',
+            name: params["username"] || 'username'
+        };
+
+        var bot = {
+            id: params['botid'] || 'botid',
+            name: params["botname"] || 'botname'
+        };
+
+        var botConnection = new BotChat.DirectLine({
+            secret: params['s'],
+            token: params['t'],
+            domain: params['domain'],
+            webSocket: params['webSocket']
+        });
+
+        BotChat.App({
+            botConnection: botConnection,
+            user: user,
+            bot: bot
+        }, document.getElementById("BotChatGoesHere"));
+
+        botConnection.activity$.filter(function (activity) { return activity.type === "event" && activity.name === "getUserLocation" })
+            .subscribe(function (activity) {
+                invokeCSharpAction('');
+            });
+
+        function gpsCallback(gpsData) {
+            var value = gpsData.lat.toFixed(3) + ", " + gpsData.lon.toFixed(3);
+            botConnection
+                .postActivity({ type: "event", value: value, from: { id: "me" }, name: "userLocationObtained" })
+                .subscribe(function (id) { document.querySelector('#debug').innerHTML = "Postion sent!";  });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Bot Chat</title>
+    <link href="botchat.css" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <style>
+        .wc-chatview-panel {
+            width: 320px;
+            height: 500px;
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+    <h2 style="font-family:Segoe UI;">Send a message and I will try to get your location using the native capabilities of the UWP platform</h2>
+    <div id="BotChatGoesHere"></div>
+    <!--<button onclick="executeRoundtrip()" style="width:120px;height:60px;padding:20px;margin-left:80px;margin-top:20px;">Get Location</button>-->
+    <div id="debug"></div>
+
+    <script src="botchat.js"></script>
+    <script>
+        //var params = {};
+        //location
+        //    .search
+        //    .substring(1)
+        //    .split("&")
+        //    .forEach(function (pair) {
+        //        var p = pair.split("=");
+        //        params[p[0]] = decodeURIComponent(p[1]);
+        //    });
+
+        // TODO: unwire this!!
+        var params = { s: '9D8Ibej0fB0.cwA.OXE.8gK0nPLryic-I72y2MbdMQHS1JiRMBe-b-cHOI9P8Ew' };
+
+        var user = {
+            id: params['userid'] || 'userid',
+            name: params["username"] || 'username'
+        };
+
+        var bot = {
+            id: params['botid'] || 'botid',
+            name: params["botname"] || 'botname'
+        };
+
+        var botConnection = new BotChat.DirectLine({
+            secret: params['s'],
+            token: params['t'],
+            domain: params['domain'],
+            webSocket: params['webSocket']
+        });
+
+        BotChat.App({
+            botConnection: botConnection,
+            user: user,
+            bot: bot
+        }, document.getElementById("BotChatGoesHere"));
+
+        botConnection.activity$
+            .filter(activity => activity.type === "event" && activity.name === "getUserLocation")
+            .subscribe(activity => invokeCSharpAction(''));
+
+        const gpsCallback = (gpsData) => {
+            var value = gpsData.lat.toFixed(3) + ", " + gpsData.lon.toFixed(3);
+            botConnection
+               .postActivity({ type: "event", value: value, from: { id: "me" }, name: "userLocationObtained" })
+               .subscribe(id => console.log("success"));
+        }
+    </script>
+</body>
+</html>
