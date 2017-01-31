@@ -6,10 +6,14 @@ This sample show how bot can go beyond by becoming embedded into larger applicat
 * The latest update of Visual Studio 2015. You can download the community version [here](http://www.visualstudio.com) for free.
 * Unity 3d. You can download it from [here](https://store.unity.com/es). Personal edition is free.
 * Register your bot with the Microsoft Bot Framework. Please refer to [this](https://docs.botframework.com/en-us/csharp/builder/sdkreference/gettingstarted.html#registering) for the instructions.
-* Enable the Direct Line channel, edit the settings  
-  ![DirectLine Channel](images/chatwidget-directline-channel.png) 
+* Enable the Direct Line channel, edit the settings
+*  
+  ![DirectLine Channel](images/directline-channel.png) 
+ 
   and add a new site to get the Direct Line secret key.
-  ![DirectLine Token](images/chatwidget-directline-token.png)
+  
+  ![DirectLine Token](images/directline-token.png)
+  
   Refer to [this](https://docs.botframework.com/en-us/csharp/builder/sdkreference/gettingstarted.html#channels) for more information on how to configure channels. 
 * Replace _"YourDirectLineToken"_ of the [`BotDirectLineManager.Initialize`](Assets/BotInitializer.cs#L17) call in the `Start` method of the [BotInitializer.cs](Assets/BotInitializer.cs) with the Direct Line secret key.
 
