@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Configuration;
 using System.Web;
-using System.Web.Configuration;
 using System.Web.Http;
 using Autofac;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -17,6 +16,8 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot
         {
             // Set AppInsights Instrumentation Key. 
             TelemetryConfiguration.Active.InstrumentationKey = ConfigurationManager.AppSettings["InstrumentationKey"];
+
+            // Configure Web API.
             GlobalConfiguration.Configure(WebApiConfig.Register);
 
             // Register activity logger

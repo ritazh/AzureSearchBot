@@ -156,6 +156,8 @@
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\MessagesController.cs" />
+    <Compile Include="Dialogs\Alarm.cs" />
+    <Compile Include="Dialogs\AlarmForm.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -165,7 +167,7 @@
     <Compile Include="Telemetry\DocumentResult.cs" />
     <Compile Include="Telemetry\DialogActivityLogger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SimpleAlarmDialog.cs" />
+    <Compile Include="Dialogs\RootDialog.cs" />
     <Compile Include="Telemetry\TelemetryEventTypes.cs" />
     <Compile Include="Telemetry\TelemetryLogger.cs" />
   </ItemGroup>
