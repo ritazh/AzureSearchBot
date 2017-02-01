@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var restify = require('restify');
 var builder = require('botbuilder');
@@ -8,6 +8,7 @@ server.listen(process.env.port || process.env.PORT || 3978, function () {
   console.log('%s listening to %s', server.name, server.url); 
 });
 
+// setup bot credentials
 var connector = new builder.ChatConnector({
   appId: process.env.MICROSOFT_APP_ID,
   appPassword: process.env.MICROSOFT_APP_PASSWORD
@@ -16,6 +17,7 @@ var connector = new builder.ChatConnector({
 var bot = new builder.UniversalBot(connector);
 bot = require("./botadapter").patch(bot);
 
+// handle the proactive initiated dialog
 bot.dialog('/survey', [
   function (session, args, next) {
     var prompt = ('Hello, I\'m the survey dialog. I\'m interrupting your conversation to ask you a question. Type "done" to resume');
@@ -27,14 +29,17 @@ bot.dialog('/survey', [
   }
 ]);
 
-function startProactiveDialog(addr) {
+// initiate a dialog proactively 
+function startProactiveDialog(address) {
   // set resume:false to resume at the root dialog
   // else true to resume the previous dialog
-  bot.beginDialog(savedAddress, "*:/survey", {}, { resume: true });  
+  bot.beginDialog(address, "*:/survey", {}, { resume: true });  
 }
 
 var savedAddress;
 server.post('/api/messages', connector.listen());
+
+// Do GET this endpoint to start a dialog proactively
 server.get('/api/CustomWebApi', (req, res, next) => {
     startProactiveDialog(savedAddress);
     res.send('triggered');
@@ -42,6 +47,7 @@ server.get('/api/CustomWebApi', (req, res, next) => {
   }
 );
 
+// root dialog
 bot.dialog('/', function(session, args) {
 
   savedAddress = session.message.address;

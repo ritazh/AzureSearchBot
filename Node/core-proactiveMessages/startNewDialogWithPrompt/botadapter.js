@@ -1,5 +1,3 @@
-'user strict';
-
 var builder = require('botbuilder');
 
 function _clone(obj) {
@@ -43,7 +41,7 @@ function loadSession(address, opts, cb) {
         var session = new builder.Session({
           localizer: _this.localizer,
           autoBatchDelay: _this.settings.autoBatchDelay,
-          library: _this.lib,
+          library: _this,
           actions: _this.actions,
           middleware: _this.mwSession,
           dialogId: opts.dialogId,
@@ -119,4 +117,3 @@ function patch(bot) {
 }
 
 exports.patch = patch;
-
