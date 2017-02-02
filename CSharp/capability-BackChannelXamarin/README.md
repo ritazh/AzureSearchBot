@@ -1,6 +1,6 @@
-# Backchannel Bot Sample
+# XAmarin + BackChannel Bot Sample
 
-A sample bot showing how to interact with a mobile device and its Geoposition sensor.
+A sample showing how to interact with a bot via BackChannel from a Xamarin solution.
 
 ### Prerequisites
 The minimum prerequisites to run this sample are:
@@ -11,15 +11,18 @@ The minimum prerequisites to run this sample are:
 * Register your bot with the Microsoft Bot Framework. Please refer to [this](https://docs.botframework.com/en-us/csharp/builder/sdkreference/gettingstarted.html#registering) for the instructions.
 * Enable the Direct Line channel, edit the settings  
   ![DirectLine Channel](images/chatwidget-directline-channel.png) 
+
   and add a new site to get the Direct Line secret key.
+  
   ![DirectLine Token](images/chatwidget-directline-token.png)
+  
   Refer to [this](https://docs.botframework.com/en-us/csharp/builder/sdkreference/gettingstarted.html#channels) for more information on how to configure channels. 
-* Replace _"YourSecretKeyhere"_ on the `index.html` file of each platform ([Android](/Droid/Assets/Content/index.html), [iOS](/iOS/Content/index.html), [Universal Windows](/UWP/Content/index.html), [Windows Phone 8.1](/WinPhone81/Content/index.html)) with the Direct Line secret key.
+* Replace _"YourSecretKeyhere"_ on the `index.html` file of each platform ([Android](Droid/Assets/Content/index.html), [iOS](iOS/Content/index.html), [Universal Windows](UWP/Content/index.html), [Windows Phone 8.1](WinPhone81/Content/index.html)) with the Direct Line secret key.
 	
 	````JS
 	var params = { s: 'YourSecretKeyhere' };
 	````
-* Update the `ChatConnector`'s constructor in the [connectorSetup.js](/backGpsChannelBot/connectorSetup.js) file with your bot's credentials.
+* Update the `ChatConnector`'s constructor in the [connectorSetup.js](backGpsChannelBot/connectorSetup.js) file with your bot's credentials.
 	
 	````JS
 	var connector = new builder.ChatConnector({
@@ -41,10 +44,11 @@ The HybridWebView custom control is created in the portable class library (PCL) 
 * A CleanUp method that removes the reference to the registered Action.
 * An InvokeAction method that invokes the registered Action. This method will be called from a custom renderer in each platform-specific project.
 
-The `CustomRenderer` project is a Portable Class Library (PCL) project. Portable Class Libraries allow you to write code and produce libraries that can be shared across mulitple platforms including Xamarin.iOS, Xamarin.Android and Windows Phone 
+The `CustomRenderer` project is a Portable Class Library (PCL) project. Portable Class Libraries allow you to write code and produce libraries that can be shared across multiple platforms including Xamarin.iOS, Xamarin.Android and Windows Phone 
 
-The point of this sample is show how bots can interact with mobile sensors. We have one part in Xamarin projects: One PLC project and one project to each platform. The other part is running in nodeJS.
-Each Xamarin project has an ´index.html´ page with an embedded chat control. The bot running in nodeJS process the messages and creates a event message that is returned to the caller in ´index.html´ which invoke each platform custom implementation of [IGpsDataProvider](/CustomRenderer/Interfaces/IGpsDataProvider.cs) to provide the GPS location in each device.
+The purpose of this sample is show how bots, via BackChannel, can interact with Xamarin apps, in this case to retrieve the GPS location using the mobile sensors. The sample consists of a set of Xamarin projects (the PCL project and one project for each of the platforms) and the bot which was built using Node.js.
+
+Each Xamarin project has an ´index.html´ page with an embedded chat control. The bot running in nodeJS process the messages and creates a event message that is returned to the caller in ´index.html´ which invoke each platform custom implementation of [IGpsDataProvider](CustomRenderer/Interfaces/IGpsDataProvider.cs) to provide the GPS location in each device.
 
 ````JS
 botConnection.activity$.filter(function (activity) { return activity.type === "event" && activity.name === "getUserLocation" })
@@ -53,7 +57,8 @@ botConnection.activity$.filter(function (activity) { return activity.type === "e
 	});
 ````
 
-After the custom implementation is called and GPS location is returned as a [Position](/CustomRenderer/Models/Position.cs) model, the `gpsCallback` JavaScript function in the `index.html` is called within the coordinates and then it calls again the bot with a event message with the coordinates as value. This `event` is intercepted by the following code in the apps.js in nodeJS project. And the user receives it location.
+After the native custom implementation is called and the GPS location is returned as a [Position](CustomRenderer/Models/Position.cs) model, the `gpsCallback` JavaScript function in the `index.html` is called with the coordinates and then it calls again the bot with a event message with the coordinates as value. This `event` is intercepted by the following code in the [apps.js](backGpsChannelBot/app.js) in bot project and location is posted to the user.
+
 ````JS
 bot.on("event", function (event) {
 var msg = new builder.Message().address(event.address);
