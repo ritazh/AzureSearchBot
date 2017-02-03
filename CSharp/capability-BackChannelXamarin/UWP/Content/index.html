@@ -17,23 +17,12 @@
 <body>
     <h2 style="font-family:Segoe UI;">Send a message and I will try to get your location using the native capabilities of the UWP platform</h2>
     <div id="BotChatGoesHere"></div>
-    <!--<button onclick="executeRoundtrip()" style="width:120px;height:60px;padding:20px;margin-left:80px;margin-top:20px;">Get Location</button>-->
+    
     <div id="debug"></div>
 
     <script src="botchat.js"></script>
     <script>
-        //var params = {};
-        //location
-        //    .search
-        //    .substring(1)
-        //    .split("&")
-        //    .forEach(function (pair) {
-        //        var p = pair.split("=");
-        //        params[p[0]] = decodeURIComponent(p[1]);
-        //    });
-
-        // TODO: unwire this!!
-        var params = { s: '9D8Ibej0fB0.cwA.OXE.8gK0nPLryic-I72y2MbdMQHS1JiRMBe-b-cHOI9P8Ew' };
+        var params = { s: 'YourSecretKeyhere' };
 
         var user = {
             id: params['userid'] || 'userid',
