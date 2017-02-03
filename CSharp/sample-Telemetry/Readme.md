@@ -28,10 +28,12 @@ TODO
 
 #### MessagesController.cs
 Track non dialog activities manually using
+
             await TelemetryLogger.TrackActivity(message, null);
 
 #### RootDialog.cs
 Override DispatchToIntentHandler to intercept and log Luis Events:
+
         protected override Task DispatchToIntentHandler(IDialogContext context, IAwaitable<IMessageActivity> item, IntentRecommendation bestInent, LuisResult result)
         {
             // Log the resolved intent. 
