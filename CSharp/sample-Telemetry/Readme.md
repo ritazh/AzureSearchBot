@@ -1,6 +1,6 @@
 # Telemetry Bot Sample (C#)
 
-A sample bot that forwards the user to complete a PayPal payment and then resumes the conversation. This sample is a simple starting point for more complex PayPal transactions through bots. By redirecting to PayPal and resuming once done we ensure the bot does not handle the financial transaction itself and just facilitates it.
+Sample that shows how to use Application Insights to log custom telemetry on a but. The sample logs custom events to app insights than can then be queried from PowerBI or other reporting tools to create custom dashboards.
 
 ### Prerequisites
 
