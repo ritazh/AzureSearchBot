@@ -1,6 +1,6 @@
 # Telemetry Bot Sample (C#)
 
-Sample that shows how to use Application Insights to log custom telemetry on a but. The sample logs custom events to app insights than can then be queried from PowerBI or other reporting tools to create custom dashboards.
+Sample that shows how to use Application Insights to log custom telemetry on a bot. The sample logs custom events to app insights than can then be queried from PowerBI or other reporting tools to create custom dashboards.
 
 ### Prerequisites
 
