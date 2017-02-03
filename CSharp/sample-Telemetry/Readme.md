@@ -58,8 +58,8 @@ This class intercepts incoming and outgoing messages and calls TelemetryLogger.T
 
 ### PowerBI integration
 The code includes a sammple PowerBI report located under Solution Items\PowerBIReports that you can use as a base to create your own reports.
-For more details on how to integrate PowerBI with AppInsights see [Feed Power BI from Application Insights](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-export-power-bi)
-To learn more about how to write PowerBI reports see [Guided Learning](https://powerbi.microsoft.com/en-us/guided-learning/)
+* For more details on how to integrate PowerBI with AppInsights see [Feed Power BI from Application Insights](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-export-power-bi)
+* To learn more about how to write PowerBI reports see [Guided Learning](https://powerbi.microsoft.com/en-us/guided-learning/)
 
 ## Configuration
 TODO
