@@ -2,11 +2,12 @@
 
 This sample  shows how to use log custom telemetry on a bot. The sample writes custom events to Azure Application Insights than can then be queried from PowerBI or other reporting tools to create dashboards.
 
-PowerBI dashboard example
+PowerBI dashboard example  
 ![PowerBI Dashboard](Solution%20Items\Docs\Images\PowerBIDashboard.jpg)
 
-Custom dashboard example
+Custom dashboard example  
 ![Custom Dashboard](Solution%20Items\Docs\Images\CustomDashboard.jpg)
+
 ## Prerequisites
 
 The minimum prerequisites to run this sample are:
