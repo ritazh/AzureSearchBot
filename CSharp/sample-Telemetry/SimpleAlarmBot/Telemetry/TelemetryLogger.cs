@@ -7,9 +7,13 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Autofac;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Internals;
+using Microsoft.Bot.Builder.History;
 using Microsoft.Bot.Builder.Luis.Models;
 using Microsoft.Bot.Connector;
 using Newtonsoft.Json;
@@ -28,6 +32,20 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
         /// Static telemetry client instance used to log AppInsights events.. 
         /// </summary>
         public static TelemetryClient TelemetryClient { get; } = new TelemetryClient();
+
+        /// <summary>
+        /// Initializes the telemtry subsystem.
+        /// </summary>
+        /// <param name="activeInstrumentationKey"></param>
+        public static void Initialize(string activeInstrumentationKey)
+        {
+            TelemetryConfiguration.Active.InstrumentationKey = activeInstrumentationKey;
+
+            // Register activity logger
+            var builder = new ContainerBuilder();
+            builder.RegisterType<DialogActivityLogger>().As<IActivityLogger>().InstancePerLifetimeScope();
+            builder.Update(Conversation.Container);
+        }
 
         /// <summary>
         /// Logs an IActivity as a Custom Event to AppInishgts.
@@ -79,7 +97,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
         {
             var text = activity.AsMessageActivity().Text;
             var numWords = text.Split(' ').Length;
-            if (numWords >= int.Parse(_textAnalyticsMinLength) && _textAnalyticsApiKey != string.Empty)
+            if (numWords >= Int32.Parse(_textAnalyticsMinLength) && _textAnalyticsApiKey != String.Empty)
             {
                 var properties = new Dictionary<string, string>
                 {
