@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -25,8 +24,8 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
     /// </summary>
     public static class TelemetryLogger
     {
-        private static readonly string _textAnalyticsMinLength = ConfigurationManager.AppSettings["TextAnalyticsMinLenght"];
-        private static readonly string _textAnalyticsApiKey = ConfigurationManager.AppSettings["TextAnalyticsApiKey"];
+        private static string _textAnalyticsMinLength;
+        private static string _textAnalyticsApiKey;
 
         /// <summary>
         /// Static telemetry client instance used to log AppInsights events.. 
@@ -37,9 +36,13 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
         /// Initializes the telemtry subsystem.
         /// </summary>
         /// <param name="activeInstrumentationKey"></param>
-        public static void Initialize(string activeInstrumentationKey)
+        /// <param name="textAnalyticsApiKey"></param>
+        /// <param name="textAnalyticsMinLength"></param>
+        public static void Initialize(string activeInstrumentationKey, string textAnalyticsApiKey = null, string textAnalyticsMinLength = null)
         {
             TelemetryConfiguration.Active.InstrumentationKey = activeInstrumentationKey;
+            _textAnalyticsMinLength = textAnalyticsMinLength;
+            _textAnalyticsApiKey = textAnalyticsApiKey;
 
             // Register activity logger
             var builder = new ContainerBuilder();
@@ -81,8 +84,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
             {
                 {"intent", result.Intents[0].Intent},
                 {"score", result.Intents[0].Score.ToString()},
-                {"entities", JsonConvert.SerializeObject(result.Entities)} // TODO: test this
-                // TODO: where do I get the errors from like Mor?
+                {"entities", JsonConvert.SerializeObject(result.Entities)}
             };
 
             var eventTelemetry = BuildEventTelemetry(activity, properties);

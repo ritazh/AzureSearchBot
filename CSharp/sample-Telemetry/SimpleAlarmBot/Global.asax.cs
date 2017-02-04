@@ -11,7 +11,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot
         protected void Application_Start()
         {
             // Initialize telemetry subsytem.
-            TelemetryLogger.Initialize(ConfigurationManager.AppSettings["InstrumentationKey"]);
+            TelemetryLogger.Initialize(ConfigurationManager.AppSettings["InstrumentationKey"], ConfigurationManager.AppSettings["TextAnalyticsApiKey"], ConfigurationManager.AppSettings["TextAnalyticsMinLenght"]);
 
             // Configure Web API.
             GlobalConfiguration.Configure(WebApiConfig.Register);
