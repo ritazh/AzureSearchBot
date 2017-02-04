@@ -1,38 +1,45 @@
 # Telemetry Bot Sample (C#)
 
-Sample that shows how to use Application Insights to log custom telemetry on a bot. The sample logs custom events to app insights than can then be queried from PowerBI or other reporting tools to create custom dashboards.
+This sample  shows how to use log custom telemetry on a bot. The sample writes custom events to Azure Application Insights than can then be queried from PowerBI or other reporting tools to create dashboards.
 
-### Prerequisites
+PowerBI dashboard example
+![PowerBI Dashboard](Solution%20Items\Docs\Images\PowerBIDashboard.png)
+
+Custom dashboard example
+![Custom Dashboard](Solution%20Items\Docs\Images\CustomDashboard.png)
+## Prerequisites
 
 The minimum prerequisites to run this sample are:
 * The latest update of Visual Studio 2015. You can download the community version [here](http://www.visualstudio.com) for free.
 * The Bot Framework Emulator. To install the Bot Framework Emulator, download it from [here](https://emulator.botframework.com/). Please refer to [this documentation article](https://github.com/microsoft/botframework-emulator/wiki/Getting-Started) to know more about the Bot Framework Emulator.
-* Application Insights account.
-* Text Analytics key (if you want to track sentiment)
+* Azure Application Insights Service (for more information on App Insights see [Set up Application Insights for ASP.NET](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-asp-net))
+* (Optional) Text Analytics key (if you want to track sentiment)
 * (Optional) Download and install [PowerBI desktop](https://powerbi.microsoft.com/en-us/desktop/) if you will be authoring reports for PowerBI. 
 
-### Highlights
+## Highlights
 
 TODO
 
-### Key code elements
+## Key code elements
+This section describes the key portions of the code 
 
-#### Global.asax.cs
-In Global.asax.cs we register the InstrumentationKey to be used by the TelemetryClient so you don't have to store this setting in ApplicationInsights.config allowing you to configure the key outside of code. 
+### Global.asax.cs
+In Global.asax.cs we register the `InstrumentationKey` to be used by the TelemetryClient so you don't have to store this setting in ApplicationInsights.config allowing you to configure the key outside of code. 
 Here, we also register DialogActivityLogger so we can intercept incoming and outgoing messages from anything that implements IDialog.
+```cs
+// Set AppInsights Instrumentation Key. 
+TelemetryConfiguration.Active.InstrumentationKey = ConfigurationManager.AppSettings["InstrumentationKey"];
 
-            // Set AppInsights Instrumentation Key. 
-            TelemetryConfiguration.Active.InstrumentationKey = ConfigurationManager.AppSettings["InstrumentationKey"];
-
-			// Register activity logger
-            var builder = new ContainerBuilder();
-            builder.RegisterType<DialogActivityLogger>().As<IActivityLogger>().InstancePerLifetimeScope();
-            builder.Update(Conversation.Container);
+// Register activity logger
+var builder = new ContainerBuilder();
+builder.RegisterType<DialogActivityLogger>().As<IActivityLogger>().InstancePerLifetimeScope();
+builder.Update(Conversation.Container);
+```
 
 #### MessagesController.cs
 Track non-dialog activities manually using
 
-            await TelemetryLogger.TrackActivity(message, null);
+            await TelemetryLogger.TrackActivity(message);
 
 #### RootDialog.cs
 Override DispatchToIntentHandler to intercept and log Luis Events:
@@ -64,13 +71,13 @@ The code includes a sammple PowerBI report located under Solution Items\PowerBIR
 ## Configuration
 TODO
 
-### Code of Conduct
+## Code of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
-### Copyright and license
+## Copyright and license
 
 Code released under [the MIT license](LICENSE)
 
