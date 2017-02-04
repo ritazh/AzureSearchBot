@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Chronic;
 using Microsoft.Bot.Builder.Dialogs;
@@ -7,6 +6,7 @@ using Microsoft.Bot.Builder.FormFlow;
 using Microsoft.Bot.Builder.Luis;
 using Microsoft.Bot.Builder.Luis.Models;
 using Microsoft.Bot.Connector;
+using Microsoft.Bot.Sample.SimpleAlarmBot.Services;
 using Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry;
 
 namespace Microsoft.Bot.Sample.SimpleAlarmBot.Dialogs
@@ -15,11 +15,9 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Dialogs
     [Serializable]
     public class RootDialog : LuisDialog<object>
     {
-        public const string DefaultAlarmName = "default";
-
         private const string _entityAlarmName = "AlarmName";
         private const string _entityAlarmStartTime = "builtin.datetime.time";
-        private static readonly Dictionary<string, Alarm> _alarms = new Dictionary<string, Alarm>();
+        private static readonly AlarmService _alarms = new AlarmService();
 
         protected override Task DispatchToIntentHandler(IDialogContext context, IAwaitable<IMessageActivity> item, IntentRecommendation bestInent, LuisResult result)
         {
@@ -33,25 +31,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Dialogs
         {
             try
             {
-                EntityRecommendation title;
-                result.TryFindEntity(_entityAlarmName, out title);
-
-                EntityRecommendation time;
-                result.TryFindEntity(_entityAlarmStartTime, out time);
-                DateTime? when = null;
-                if (time != null)
-                {
-                    var parser = new Parser();
-                    var span = parser.Parse(time.Entity);
-                    when = span.Start ?? span.End;
-                }
-
-                var alarmForm = new AlarmForm
-                {
-                    Name = title?.Entity,
-                    Time = when
-                };
-
+                var alarmForm = InitAlarmForm(result);
                 var alarmFormDialog = new FormDialog<AlarmForm>(alarmForm, AlarmForm.BuildForm, FormOptions.PromptInStart);
                 context.Call(alarmFormDialog, ResumeAfterAlarmSet);
             }
@@ -70,12 +50,12 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Dialogs
 
             if (title != null)
             {
-                await DeleteAlarm(context, title.Entity);
+                await _alarms.DeleteAlarm(context, title.Entity);
                 context.Wait(MessageReceived);
             }
             else
             {
-                var dialog = new PromptDialog.PromptChoice<string>(_alarms.Keys, $"Which alarm would you like to delete?", "Didn't get that!", 3);
+                var dialog = new PromptDialog.PromptChoice<string>(_alarms.Alarms, "Which alarm would you like to delete?", "Didn't get that!", 3);
                 context.Call(dialog, ResumeAfterAlarmDelete);
             }
         }
@@ -83,7 +63,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Dialogs
         [LuisIntent("")]
         public async Task None(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync($"I'm sorry I didn't understand. I can only create & delete alarms.");
+            await context.PostAsync("I\'m sorry I didn\'t understand. I can only create & delete alarms.");
             context.Wait(MessageReceived);
         }
 
@@ -92,7 +72,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Dialogs
             try
             {
                 var alarm = await result;
-                _alarms.Add(alarm.Name, new Alarm {Name = alarm.Name, When = alarm.Time});
+                _alarms.CreateAlarm(context.Activity.AsMessageActivity(), alarm);
             }
             catch (FormCanceledException ex)
             {
@@ -108,14 +88,33 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Dialogs
         private static async Task ResumeAfterAlarmDelete(IDialogContext context, IAwaitable<string> result)
         {
             var alarmNam = await result;
-            await DeleteAlarm(context, alarmNam);
+            await _alarms.DeleteAlarm(context, alarmNam);
             context.Done(true);
         }
 
-        private static async Task DeleteAlarm(IDialogContext context, string title)
+        /// <summary>
+        /// Try to get alarm entity info from LUIS result and initialize the form
+        /// </summary>
+        private static AlarmForm InitAlarmForm(LuisResult result)
         {
-            _alarms.Remove(title);
-            await context.PostAsync($"Deleted alarm {title}");
+            EntityRecommendation title;
+            result.TryFindEntity(_entityAlarmName, out title);
+
+            EntityRecommendation time;
+            result.TryFindEntity(_entityAlarmStartTime, out time);
+            DateTime? when = null;
+            if (time != null)
+            {
+                var parser = new Parser();
+                var span = parser.Parse(time.Entity);
+                when = span.Start ?? span.End;
+            }
+
+            return new AlarmForm
+            {
+                Name = title?.Entity,
+                Time = when
+            };
         }
     }
 }

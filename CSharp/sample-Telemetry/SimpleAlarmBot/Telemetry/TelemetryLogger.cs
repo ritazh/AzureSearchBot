@@ -24,12 +24,15 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
         private static readonly string _textAnalyticsMinLength = ConfigurationManager.AppSettings["TextAnalyticsMinLenght"];
         private static readonly string _textAnalyticsApiKey = ConfigurationManager.AppSettings["TextAnalyticsApiKey"];
 
+        /// <summary>
+        /// Static telemetry client instance used to log AppInsights events.. 
+        /// </summary>
         public static TelemetryClient TelemetryClient { get; } = new TelemetryClient();
 
         /// <summary>
-        /// Logs an IActivity to AppInishgts.
+        /// Logs an IActivity as a Custom Event to AppInishgts.
         /// </summary>
-        public static async Task TrackActivity(IActivity activity, IBotData botData)
+        public static async Task TrackActivity(IActivity activity, IBotData botData = null)
         {
             var et = BuildEventTelemetry(activity);
 #if DEBUG
@@ -52,9 +55,26 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
         }
 
         /// <summary>
+        /// Logs a LUIS intent to AppInisghts.
+        /// </summary>
+        public static void TrackLuisIntent(IActivity activity, LuisResult result)
+        {
+            var properties = new Dictionary<string, string>
+            {
+                {"intent", result.Intents[0].Intent},
+                {"score", result.Intents[0].Score.ToString()},
+                {"entities", JsonConvert.SerializeObject(result.Entities)} // TODO: test this
+                // TODO: where do I get the errors from like Mor?
+            };
+
+            var eventTelemetry = BuildEventTelemetry(activity, properties);
+            eventTelemetry.Name = TelemetryEventTypes.LuisIntentDialog;
+            TelemetryClient.TrackEvent(eventTelemetry);
+        }
+
+        /// <summary>
         /// Helper method to track the sentiment of incoming messages.
         /// </summary>
-        /// <param name="activity"></param>
         private static async Task TrackMessageSentiment(IActivity activity)
         {
             var text = activity.AsMessageActivity().Text;
@@ -73,23 +93,8 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
         }
 
         /// <summary>
-        /// Logs a LUIS intent to AppInisghts.
+        /// Helper method to create an EventTelemetry instance and populate common properties depending on the message type.
         /// </summary>
-        public static void TrackLuisIntent(IActivity activity, LuisResult result)
-        {
-            var properties = new Dictionary<string, string>
-            {
-                {"intent", result.Intents[0].Intent},
-                {"score", result.Intents[0].Score.ToString()},
-                {"entities", JsonConvert.SerializeObject(result.Entities)} // TODO: test this
-                // TODO: where do I get the errors from like Mor?
-            };
-
-            var eventTelemetry = BuildEventTelemetry(activity, properties);
-            eventTelemetry.Name = TelemetryEventTypes.LuisIntentDialog;
-            TelemetryClient.TrackEvent(eventTelemetry);
-        }
-
         private static EventTelemetry BuildEventTelemetry(IActivity activity, IDictionary<string, string> properties = null, IDictionary<string, double> metrics = null)
         {
             var et = new EventTelemetry();
@@ -125,6 +130,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
                     break;
             }
 
+            // Add any other properties received.
             if (properties != null)
             {
                 foreach (var property in properties)
@@ -133,6 +139,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
                 }
             }
 
+            // Add any other metrics received.
             if (metrics != null)
             {
                 foreach (var metric in metrics)
@@ -152,15 +159,14 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
 
         private static async Task<double> GetSentimentScore(string message)
         {
-            List<DocumentInput> docs = new List<DocumentInput>
+            var docs = new List<DocumentInput>
             {
                 new DocumentInput {Id = 1, Text = message}
             };
-            BatchInput sentimentInput = new BatchInput {Documents = docs};
+            var sentimentInput = new BatchInput {Documents = docs};
             var jsonSentimentInput = JsonConvert.SerializeObject(sentimentInput);
             var sentimentInfo = await GetSentiment(_textAnalyticsApiKey, jsonSentimentInput);
-            var sentimentScore = sentimentInfo.Documents[0].Score;
-            return sentimentScore;
+            return sentimentInfo.Documents[0].Score;
         }
 
         private static async Task<BatchResult> GetSentiment(string apiKey, string jsonSentimentInput)
@@ -173,13 +179,9 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
                 client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", apiKey);
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                byte[] byteData = Encoding.UTF8.GetBytes(jsonSentimentInput);
-
-                var uri = "text/analytics/v2.0/sentiment";
-                var sentimentRawResponse = await CallEndpoint(client, uri, byteData);
-
-                var sentimentJsonResponse = JsonConvert.DeserializeObject<BatchResult>(sentimentRawResponse);
-                return sentimentJsonResponse;
+                var byteData = Encoding.UTF8.GetBytes(jsonSentimentInput);
+                var sentimentRawResponse = await CallEndpoint(client, "text/analytics/v2.0/sentiment", byteData);
+                return JsonConvert.DeserializeObject<BatchResult>(sentimentRawResponse);
             }
         }
 

@@ -42,7 +42,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Controllers
         private async Task<Activity> HandleSystemMessage(Activity message)
         {
             // Other that happen outside dialogs need to be logged manually, we do that here.
-            await TelemetryLogger.TrackActivity(message, null);
+            await TelemetryLogger.TrackActivity(message);
 
             if (message.Type == ActivityTypes.DeleteUserData)
             {
