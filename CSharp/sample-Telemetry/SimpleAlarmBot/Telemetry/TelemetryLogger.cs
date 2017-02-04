@@ -40,7 +40,10 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry
         /// <param name="textAnalyticsMinLength"></param>
         public static void Initialize(string activeInstrumentationKey, string textAnalyticsApiKey = null, string textAnalyticsMinLength = null)
         {
+            // Initialize AppInsights with telemetry key.
             TelemetryConfiguration.Active.InstrumentationKey = activeInstrumentationKey;
+
+            // Set the text analytics parameters.
             _textAnalyticsMinLength = textAnalyticsMinLength;
             _textAnalyticsApiKey = textAnalyticsApiKey;
 
