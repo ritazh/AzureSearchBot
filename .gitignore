@@ -243,3 +243,4 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+/CSharp/sample-Telemetry/Readme.md.saved.bak

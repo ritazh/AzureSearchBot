@@ -7,17 +7,12 @@
 using System;
 using System.Configuration;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
-using System.Web;
 using Microsoft.Rtc.Collaboration;
 using Microsoft.Rtc.Signaling;
-using System.Configuration;
 
-
-namespace UcmaBotDTMF
+namespace UcmaBotDtmf.Helpers
 {
     public class UCMASampleHelper
     {
@@ -85,11 +80,11 @@ namespace UcmaBotDTMF
 
         public UCMASampleHelper()
         {
-            _userName = ConfigurationSettings.AppSettings["username"];
-            _userPassword = ConfigurationSettings.AppSettings["password"];
-            _userDomain = ConfigurationSettings.AppSettings["domain"];
-            _userURI = ConfigurationSettings.AppSettings["uri"];
-            _serverFqdn = ConfigurationSettings.AppSettings["fqdn"];
+            _userName = ConfigurationManager.AppSettings["username"];
+            _userPassword = ConfigurationManager.AppSettings["password"];
+            _userDomain = ConfigurationManager.AppSettings["domain"];
+            _userURI = ConfigurationManager.AppSettings["uri"];
+            _serverFqdn = ConfigurationManager.AppSettings["fqdn"];
           
 
         }
@@ -297,7 +292,7 @@ namespace UcmaBotDTMF
                 Console.WriteLine("Creating User Endpoint for {0}...", endpointFriendlyName);
                 Console.WriteLine();
 
-                if (ConfigurationSettings.AppSettings[_serverFQDNPrompt + _userCount] != null)
+                if (ConfigurationManager.AppSettings[_serverFQDNPrompt + _userCount] != null)
                 {
                     if (ReadGenericApplicationContactConfiguration())
                     {
@@ -387,14 +382,14 @@ namespace UcmaBotDTMF
         {
             try
             {
-                _serverFqdn = ConfigurationSettings.AppSettings["ServerFQDN"];
-                _certificateFriendlyName = ConfigurationSettings.AppSettings["CertificateFriendlyName"];
-                _applicationHostFQDN = ConfigurationSettings.AppSettings["ApplicationHostFQDN"];
-                if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["ApplicationPort"]))
+                _serverFqdn = ConfigurationManager.AppSettings["ServerFQDN"];
+                _certificateFriendlyName = ConfigurationManager.AppSettings["CertificateFriendlyName"];
+                _applicationHostFQDN = ConfigurationManager.AppSettings["ApplicationHostFQDN"];
+                if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["ApplicationPort"]))
                 {
-                    _applicationPort = int.Parse(ConfigurationSettings.AppSettings["ApplicationPort"], CultureInfo.InvariantCulture);
+                    _applicationPort = int.Parse(ConfigurationManager.AppSettings["ApplicationPort"], CultureInfo.InvariantCulture);
                 }
-                _applicationGruu = ConfigurationSettings.AppSettings["ApplicationGRUU"];
+                _applicationGruu = ConfigurationManager.AppSettings["ApplicationGRUU"];
             }
             catch (Exception ex)
             {
@@ -418,22 +413,22 @@ namespace UcmaBotDTMF
                 _appContactCount++;
                 string contactCount = _appContactCount.ToString(CultureInfo.InvariantCulture);
 
-                if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["ApplicationHostFQDN" + contactCount]))
+                if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["ApplicationHostFQDN" + contactCount]))
                 {
-                    _applicationHostFQDN = ConfigurationSettings.AppSettings["ApplicationHostFQDN" + contactCount];
+                    _applicationHostFQDN = ConfigurationManager.AppSettings["ApplicationHostFQDN" + contactCount];
                 }
 
-                if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["ApplicationPort" + contactCount]))
+                if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["ApplicationPort" + contactCount]))
                 {
-                    _applicationPort = int.Parse(ConfigurationSettings.AppSettings["ApplicationPort" + contactCount], CultureInfo.InvariantCulture);
+                    _applicationPort = int.Parse(ConfigurationManager.AppSettings["ApplicationPort" + contactCount], CultureInfo.InvariantCulture);
                 }
 
-                if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["ApplicationGRUU" + contactCount]))
+                if (!string.IsNullOrEmpty(ConfigurationManager.AppSettings["ApplicationGRUU" + contactCount]))
                 {
-                    _applicationGruu = ConfigurationSettings.AppSettings["ApplicationGRUU" + contactCount];
+                    _applicationGruu = ConfigurationManager.AppSettings["ApplicationGRUU" + contactCount];
                 }
 
-                _applicationContactURI = ConfigurationSettings.AppSettings["ApplicationContactURI" + contactCount];
+                _applicationContactURI = ConfigurationManager.AppSettings["ApplicationContactURI" + contactCount];
                 if (!_applicationContactURI.Trim().StartsWith(_sipPrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     _applicationContactURI = _sipPrefix + _applicationContactURI.Trim();
@@ -558,7 +553,7 @@ namespace UcmaBotDTMF
         public static string PromptUser(string promptText, string key)
         {
             String value;
-            if (String.IsNullOrEmpty(key) || ConfigurationSettings.AppSettings[key] == null)
+            if (String.IsNullOrEmpty(key) || ConfigurationManager.AppSettings[key] == null)
             {
                 Console.WriteLine(string.Empty);
                 Console.Write(promptText);
@@ -566,7 +561,7 @@ namespace UcmaBotDTMF
             }
             else
             {
-                value = ConfigurationSettings.AppSettings[key];
+                value = ConfigurationManager.AppSettings[key];
                 
                 //change this to preserve confidentiality in video demo
                 //Console.WriteLine("Using keypair {0} - {1} from AppSettings...", key, value);

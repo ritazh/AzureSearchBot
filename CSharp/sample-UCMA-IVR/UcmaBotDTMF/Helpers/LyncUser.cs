@@ -1,16 +1,9 @@
-﻿using Microsoft.Rtc.Collaboration;
-using Microsoft.Rtc.Collaboration.AudioVideo;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using System.Configuration;
-using Microsoft.Rtc.Collaboration.Presence;
+using Microsoft.Rtc.Collaboration;
+using Microsoft.Rtc.Collaboration.AudioVideo;
 
-using Microsoft.Rtc.Collaboration.ContactsGroups;
-
-namespace UcmaBotDTMF
+namespace UcmaBotDtmf.Helpers
 {
     public class LyncUser
     {
@@ -26,7 +19,7 @@ namespace UcmaBotDTMF
         {
              helper = new UCMASampleHelper();
 
-            var userEndpointSettings = helper.ReadUserSettings(ConfigurationSettings.AppSettings["username"]);
+            var userEndpointSettings = helper.ReadUserSettings(ConfigurationManager.AppSettings["username"]);
 
             userEndpointSettings.AutomaticPresencePublicationEnabled = true;
 

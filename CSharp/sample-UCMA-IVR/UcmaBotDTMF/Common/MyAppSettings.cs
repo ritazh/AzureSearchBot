@@ -1,18 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UcmaBotDTMF.Models;
+using UcmaBotDtmf.Models;
 
-namespace UcmaBotDTMF.Common
+namespace UcmaBotDtmf.Common
 {
     public class MyAppSettings
     {
-              public static BotLanguageModel BotLanguage { get; set; }
+        public static BotLanguageModel BotLanguage { get; set; }
 
-              public static string ProjectTitle { get; set; }
+        public static string ProjectTitle { get; set; }
 
-              public static bool IsAmazonText2Speechenabled { get; set; }
+        public static bool IsAmazonText2Speechenabled { get; set; }
     }
 }

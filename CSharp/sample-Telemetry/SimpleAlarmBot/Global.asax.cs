@@ -2,10 +2,6 @@
 using System.Configuration;
 using System.Web;
 using System.Web.Http;
-using Autofac;
-using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Builder.History;
 using Microsoft.Bot.Sample.SimpleAlarmBot.Telemetry;
 
 namespace Microsoft.Bot.Sample.SimpleAlarmBot
@@ -14,16 +10,11 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot
     {
         protected void Application_Start()
         {
-            // Set AppInsights Instrumentation Key. 
-            TelemetryConfiguration.Active.InstrumentationKey = ConfigurationManager.AppSettings["InstrumentationKey"];
+            // Initialize telemetry subsytem.
+            TelemetryLogger.Initialize(ConfigurationManager.AppSettings["InstrumentationKey"], ConfigurationManager.AppSettings["TextAnalyticsApiKey"], ConfigurationManager.AppSettings["TextAnalyticsMinLenght"]);
 
             // Configure Web API.
             GlobalConfiguration.Configure(WebApiConfig.Register);
-
-            // Register activity logger
-            var builder = new ContainerBuilder();
-            builder.RegisterType<DialogActivityLogger>().As<IActivityLogger>().InstancePerLifetimeScope();
-            builder.Update(Conversation.Container);
         }
     }
 }

@@ -1,15 +1,10 @@
-﻿using Amazon.Polly;
+﻿using System;
+using System.Configuration;
+using Amazon.Polly;
 using Amazon.Polly.Model;
 using Amazon.Runtime;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace UcmaBotDTMF.Helpers
+namespace UcmaBotDtmf.Helpers
 {
     public class AmazonText2Speech
     {
@@ -17,7 +12,7 @@ namespace UcmaBotDTMF.Helpers
         public AmazonText2Speech()
         {
             
-            var credentials = new BasicAWSCredentials(ConfigurationSettings.AppSettings["accesskey"], ConfigurationSettings.AppSettings["secretkey"]);
+            var credentials = new BasicAWSCredentials(ConfigurationManager.AppSettings["accesskey"], ConfigurationManager.AppSettings["secretkey"]);
             amazonPolicyClient = new AmazonPollyClient(credentials);
         }
         public SynthesizeSpeechResponse Speak(string text)

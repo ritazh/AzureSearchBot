@@ -1,21 +1,15 @@
-﻿using Microsoft.CognitiveServices.SpeechRecognition;
-using Microsoft.Rtc.Collaboration.AudioVideo;
-using NAudio.Wave;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Configuration;
 using System.IO;
-using System.Linq;
-using System.Speech.AudioFormat;
-using System.Speech.Synthesis;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Timers;
-using UcmaBotDTM;
-using UcmaBotDTMF.Common;
-using UcmaBotDTMF.Models;
+using Microsoft.CognitiveServices.SpeechRecognition;
+using Microsoft.Rtc.Collaboration.AudioVideo;
+using NAudio.Wave;
+using UcmaBotDtmf.Common;
+using UcmaBotDtmf.Models;
 
-namespace UcmaBotDTMF.Helpers
+namespace UcmaBotDtmf.Helpers
 {
     public delegate void LoggingHandler(string displayName, string message);
     public class AudioCallIVR
@@ -262,7 +256,7 @@ namespace UcmaBotDTMF.Helpers
              speechSynthesizer.SelectVoice("Microsoft Hazel Desktop"); //slightly more english    
              speechSynthesisConnector.Start();*/
 
-            dataClient = SpeechRecognitionServiceFactory.CreateDataClient(SpeechRecognitionMode.ShortPhrase, MyAppSettings.BotLanguage.Local, ConfigurationSettings.AppSettings["subscriptionkey"]);
+            dataClient = SpeechRecognitionServiceFactory.CreateDataClient(SpeechRecognitionMode.ShortPhrase, MyAppSettings.BotLanguage.Local, ConfigurationManager.AppSettings["subscriptionkey"]);
 
             dataClient.OnResponseReceived += DataClient_OnResponseReceived;
             dataClient.OnConversationError += DataClient_OnConversationError;

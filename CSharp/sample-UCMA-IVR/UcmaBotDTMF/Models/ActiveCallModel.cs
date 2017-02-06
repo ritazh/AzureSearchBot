@@ -1,12 +1,8 @@
-﻿using Microsoft.Rtc.Collaboration.AudioVideo;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UcmaBotDTMF.Helpers;
+﻿using System;
+using Microsoft.Rtc.Collaboration.AudioVideo;
+using UcmaBotDtmf.Helpers;
 
-namespace UcmaBotDTMF.Models
+namespace UcmaBotDtmf.Models
 {
     public class ActiveCallModel
     {

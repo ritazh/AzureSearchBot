@@ -1,32 +1,27 @@
-﻿using Microsoft.Rtc.Collaboration;
+﻿using System;
+using System.Configuration;
+using System.Net;
+using System.Threading;
+using Microsoft.Rtc.Collaboration;
 using Microsoft.Rtc.Collaboration.AudioVideo;
 using Microsoft.Rtc.Signaling;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace UcmaBotDTMF.Helpers
+namespace UcmaBotDtmf.Helpers
 {
-   public class UCMAStandalone
+    public class UCMAStandalone
     {
+        private static readonly AutoResetEvent autoEvent = new AutoResetEvent(false);
+
+        private ApplicationEndpoint endpoint;
         private ApplicationEndpointSettings endpointSettings;
 
         private CollaborationPlatform platform;
-
-        private ApplicationEndpoint endpoint;        
-        public int PortNumber => Convert.ToInt32(ConfigurationSettings.AppSettings["appPort"]);
+        public int PortNumber => Convert.ToInt32(ConfigurationManager.AppSettings["appPort"]);
         private string HostName => Dns.GetHostEntry("localhost").HostName;
         public string SipUri => $"sip:default@{HostName}";
 
-        private static AutoResetEvent autoEvent = new AutoResetEvent(false);
         private void StartPlatform()
         {
-
             Console.WriteLine($"Standalone UCMA listening port {PortNumber}");
 
             ServerPlatformSettings settings = new ServerPlatformSettings("standalone", HostName, PortNumber, string.Empty);
@@ -35,7 +30,7 @@ namespace UcmaBotDTMF.Helpers
 
             try
             {
-                platform.BeginStartup(PlatformStartedCallback, platform);                
+                platform.BeginStartup(PlatformStartedCallback, platform);
             }
             catch (InvalidOperationException ex)
             {
@@ -65,7 +60,7 @@ namespace UcmaBotDTMF.Helpers
 
             Console.WriteLine($"Endpoint Uri: {SipUri}");
             // Create a placeholder URI for the endpoint.
-             endpointSettings = new ApplicationEndpointSettings(SipUri);
+            endpointSettings = new ApplicationEndpointSettings(SipUri);
             // Make this a default routing endpoint, so that
             // all requests sent to the listening port on this IP,
             // regardless of To URI, will come to the endpoint.
@@ -79,13 +74,11 @@ namespace UcmaBotDTMF.Helpers
             try
             {
                 endpoint.BeginEstablish(EndpointEstablishedCallback, endpoint);
-              
             }
             catch (InvalidOperationException ex)
             {
                 Console.WriteLine(ex);
             }
-
         }
 
         private void EndpointEstablishedCallback(IAsyncResult ar)
@@ -110,7 +103,6 @@ namespace UcmaBotDTMF.Helpers
 
             AudioVideoCallReceived?.Invoke(sender, e);
         }
-       
 
         private void EndpointTerminatedCallback(IAsyncResult ar)
         {
@@ -140,17 +132,17 @@ namespace UcmaBotDTMF.Helpers
             //Console.WriteLine("Platform shut down.");
 
             autoEvent.Set();
-
         }
 
         public event EventHandler<CallReceivedEventArgs<AudioVideoCall>> AudioVideoCallReceived = delegate { };
+
         public void Start()
         {
-
             StartPlatform();
 
             autoEvent.WaitOne();
         }
+
         public void Stop()
         {
             endpoint.BeginTerminate(EndpointTerminatedCallback, endpoint);
@@ -158,7 +150,4 @@ namespace UcmaBotDTMF.Helpers
             autoEvent.WaitOne();
         }
     }
-
-
-
 }

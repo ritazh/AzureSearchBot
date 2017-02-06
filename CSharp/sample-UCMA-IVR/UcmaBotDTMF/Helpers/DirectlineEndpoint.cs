@@ -1,16 +1,14 @@
-﻿namespace UcmaBotDTMF.Helpers
-{
-    using System;
-    using System.Configuration;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Microsoft.Bot.Connector.DirectLine;
-    using Newtonsoft.Json;
-    using UcmaBotDTMF.Models;
-    using Common;
-    using UcmaBotDTM;
+﻿using System;
+using System.Configuration;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Bot.Connector.DirectLine;
+using Newtonsoft.Json;
+using UcmaBotDtmf.Common;
+using UcmaBotDtmf.Models;
 
+namespace UcmaBotDtmf.Helpers
+{
     public delegate void MessageReceivedHandler(DirectlineMessage message);
     public class DirectlineEndpoint
     {
@@ -43,8 +41,8 @@
             Activity activity = new Activity();
             activity.ChannelId = "directline";
             activity.Type = ActivityTypes.Message;
-            activity.From = new ChannelAccount(id: ConfigurationSettings.AppSettings["botUser1"]);
-            activity.Recipient = new ChannelAccount(id: ConfigurationSettings.AppSettings["botUser2"]);
+            activity.From = new ChannelAccount(id: ConfigurationManager.AppSettings["botUser1"]);
+            activity.Recipient = new ChannelAccount(id: ConfigurationManager.AppSettings["botUser2"]);
             activity.Conversation = new ConversationAccount(id: conversationid);
             activity.Text = message;
             var output = client.Conversations.PostActivityWithHttpMessagesAsync(conversationid, activity).Result;

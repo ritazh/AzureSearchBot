@@ -24,7 +24,7 @@ namespace Microsoft.Bot.Sample.SimpleAlarmBot.Dialogs
         public DateTime? Time { get; set; }
 
         /// <summary>
-        /// Helper method to create the form
+        /// Helper method to create the Form
         /// </summary>
         public static IForm<AlarmForm> BuildForm()
         {

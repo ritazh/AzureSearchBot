@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UcmaBotDTMF.Models;
+using UcmaBotDtmf.Models;
 
-namespace UcmaBotDTMF.Repositories
+namespace UcmaBotDtmf.Repositories
 {
     public class ActiveCallRepository
     {
