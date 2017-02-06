@@ -1,7 +1,7 @@
 ﻿using System;
-using UcmaBotDTMF.Models;
+using UcmaBotDtmf.Models;
 
-namespace UcmaBotDTMF.Common
+namespace UcmaBotDtmf.Common
 {
     public class MyAppSettings
     {

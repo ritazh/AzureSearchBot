@@ -1,4 +1,6 @@
-﻿namespace UcmaBotDTMF
+﻿using System;
+
+namespace UcmaBotDtmf
 {
     partial class frmActiveCallWin
     {

@@ -1,16 +1,14 @@
-﻿namespace UcmaBotDTMF.Helpers
-{
-    using System;
-    using System.Configuration;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Microsoft.Bot.Connector.DirectLine;
-    using Newtonsoft.Json;
-    using UcmaBotDTMF.Models;
-    using Common;
-    using UcmaBotDTM;
+﻿using System;
+using System.Configuration;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Bot.Connector.DirectLine;
+using Newtonsoft.Json;
+using UcmaBotDtmf.Common;
+using UcmaBotDtmf.Models;
 
+namespace UcmaBotDtmf.Helpers
+{
     public delegate void MessageReceivedHandler(DirectlineMessage message);
     public class DirectlineEndpoint
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace UcmaBotDTMF
+namespace UcmaBotDtmf
 {
     static class Program
     {

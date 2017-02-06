@@ -1,15 +1,10 @@
-﻿using Amazon.Polly;
+﻿using System;
+using System.Configuration;
+using Amazon.Polly;
 using Amazon.Polly.Model;
 using Amazon.Runtime;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace UcmaBotDTMF.Helpers
+namespace UcmaBotDtmf.Helpers
 {
     public class AmazonText2Speech
     {

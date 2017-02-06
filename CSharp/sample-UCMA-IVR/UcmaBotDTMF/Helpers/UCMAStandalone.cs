@@ -6,7 +6,7 @@ using Microsoft.Rtc.Collaboration;
 using Microsoft.Rtc.Collaboration.AudioVideo;
 using Microsoft.Rtc.Signaling;
 
-namespace UcmaBotDTMF.Helpers
+namespace UcmaBotDtmf.Helpers
 {
     public class UCMAStandalone
     {

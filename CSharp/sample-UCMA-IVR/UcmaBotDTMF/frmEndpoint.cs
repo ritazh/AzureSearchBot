@@ -1,21 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Configuration;
 using System.Windows.Forms;
 using Microsoft.Rtc.Collaboration;
 using Microsoft.Rtc.Collaboration.AudioVideo;
-using UcmaBotDTMF.Common;
-using UcmaBotDTMF.Helpers;
-using System.Configuration;
-using UcmaBotDTMF.Models;
-using UcmaBotDTMF.Repositories;
+using UcmaBotDtmf.Common;
+using UcmaBotDtmf.Helpers;
+using UcmaBotDtmf.Models;
+using UcmaBotDtmf.Repositories;
 
-namespace UcmaBotDTMF
+namespace UcmaBotDtmf
 {
     public partial class frmEndpoint : Form
     {

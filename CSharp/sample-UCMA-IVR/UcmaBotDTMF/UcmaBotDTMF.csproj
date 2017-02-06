@@ -8,8 +8,8 @@
     <ProjectGuid>{C75D812C-750F-4851-8D42-A8E092E41FB8}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>UcmaBotDTMF</RootNamespace>
-    <AssemblyName>UcmaBotDTMF</AssemblyName>
+    <RootNamespace>UcmaBotDtmf</RootNamespace>
+    <AssemblyName>UcmaBotDtmf</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
@@ -220,6 +220,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="Data\languages.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

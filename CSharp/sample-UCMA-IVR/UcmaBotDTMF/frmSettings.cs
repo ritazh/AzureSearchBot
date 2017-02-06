@@ -1,17 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using UcmaBotDTMF.Common;
-using UcmaBotDTMF.Models;
-using UcmaBotDTMF.Repositories;
+using UcmaBotDtmf.Common;
+using UcmaBotDtmf.Models;
+using UcmaBotDtmf.Repositories;
 
-namespace UcmaBotDTMF
+namespace UcmaBotDtmf
 {
     public partial class frmSettings : Form
     {

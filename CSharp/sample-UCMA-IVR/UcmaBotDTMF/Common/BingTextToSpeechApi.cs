@@ -32,62 +32,57 @@
 //
 
 using System;
-using System.IO;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading;
+using System.Configuration;
+using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Media;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Rtc.Collaboration.AudioVideo;
-using System.Configuration;
-using UcmaBotDTMF.Common;
 
-namespace UcmaBotDTMF
+namespace UcmaBotDtmf.Common
 {
     /// <summary>
     /// This class demonstrates how to get a valid O-auth token
     /// </summary>
     /// 
     public delegate void BingSpeechPlayed(string message, int step);
+
     public class Authentication
     {
-        public static readonly string AccessUri = "https://api.cognitive.microsoft.com/sts/v1.0/issueToken";
-        private string apiKey;
-        private string accessToken;
-        private Timer accessTokenRenewer;
-
         //Access token expires every 10 minutes. Renew it every 9 minutes only.
         private const int RefreshTokenDuration = 9;
+        public static readonly string AccessUri = "https://api.cognitive.microsoft.com/sts/v1.0/issueToken";
+        private string accessToken;
+        private readonly Timer accessTokenRenewer;
+        private readonly string apiKey;
 
         public Authentication(string apiKey)
         {
             this.apiKey = apiKey;
-           
-            this.accessToken = HttpPost(AccessUri, this.apiKey);
+
+            accessToken = HttpPost(AccessUri, this.apiKey);
 
             // renew the token every specfied minutes
-            accessTokenRenewer = new Timer(new TimerCallback(OnTokenExpiredCallback),
-                                           this,
-                                           TimeSpan.FromMinutes(RefreshTokenDuration),
-                                           TimeSpan.FromMilliseconds(-1));
+            accessTokenRenewer = new Timer(OnTokenExpiredCallback,
+                this,
+                TimeSpan.FromMinutes(RefreshTokenDuration),
+                TimeSpan.FromMilliseconds(-1));
         }
 
         public string GetAccessToken()
         {
-            return this.accessToken;
+            return accessToken;
         }
 
         private void RenewAccessToken()
         {
-            string newAccessToken = HttpPost(AccessUri, this.apiKey);
+            string newAccessToken = HttpPost(AccessUri, apiKey);
             //swap the new token with old one
             //Note: the swap is thread unsafe
-            this.accessToken = newAccessToken;
-            Console.WriteLine(string.Format("Renewed token for user: {0} is: {1}",
-                              this.apiKey,
-                              this.accessToken));
+            accessToken = newAccessToken;
+            Console.WriteLine("Renewed token for user: {0} is: {1}", apiKey, accessToken);
         }
 
         private void OnTokenExpiredCallback(object stateInfo)
@@ -98,7 +93,7 @@ namespace UcmaBotDTMF
             }
             catch (Exception ex)
             {
-                Console.WriteLine(string.Format("Failed renewing access token. Details: {0}", ex.Message));
+                Console.WriteLine("Failed renewing access token. Details: {0}", ex.Message);
             }
             finally
             {
@@ -108,7 +103,7 @@ namespace UcmaBotDTMF
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(string.Format("Failed to reschedule the timer to renew access token. Details: {0}", ex.Message));
+                    Console.WriteLine("Failed to reschedule the timer to renew access token. Details: {0}", ex.Message);
                 }
             }
         }
@@ -157,7 +152,7 @@ namespace UcmaBotDTMF
         /// <param name="eventData">The event data.</param>
         public GenericEventArgs(T eventData)
         {
-            this.EventData = eventData;
+            EventData = eventData;
         }
 
         /// <summary>
@@ -184,18 +179,21 @@ namespace UcmaBotDTMF
         /// raw-8khz-8bit-mono-mulaw request output audio format type.
         /// </summary>
         Raw8Khz8BitMonoMULaw,
+
         /// <summary>
         /// raw-16khz-16bit-mono-pcm request output audio format type.
         /// </summary>
         Raw16Khz16BitMonoPcm,
+
         /// <summary>
         /// riff-8khz-8bit-mono-mulaw request output audio format type.
         /// </summary>
         Riff8Khz8BitMonoMULaw,
+
         /// <summary>
         /// riff-16khz-16bit-mono-pcm request output audio format type.
         /// </summary>
-        Riff16Khz16BitMonoPcm,
+        Riff16Khz16BitMonoPcm
     }
 
     /// <summary>
@@ -211,7 +209,7 @@ namespace UcmaBotDTMF
         /// <summary>
         /// The input options
         /// </summary>
-        private InputOptions inputOptions;
+        private readonly InputOptions inputOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Synthesize"/> class.
@@ -219,7 +217,7 @@ namespace UcmaBotDTMF
         /// <param name="input">The input.</param>
         public Synthesize(InputOptions input)
         {
-            this.inputOptions = input;
+            inputOptions = input;
         }
 
         /// <summary>
@@ -240,16 +238,16 @@ namespace UcmaBotDTMF
         public Task<HttpResponseMessage> Speak(CancellationToken cancellationToken)
         {
             var cookieContainer = new CookieContainer();
-            var handler = new HttpClientHandler() { CookieContainer = cookieContainer };
+            var handler = new HttpClientHandler {CookieContainer = cookieContainer};
             var client = new HttpClient(handler);
 
-            foreach (var header in this.inputOptions.Headers)
+            foreach (var header in inputOptions.Headers)
             {
                 client.DefaultRequestHeaders.TryAddWithoutValidation(header.Key, header.Value);
             }
 
             var genderValue = "";
-            switch (this.inputOptions.VoiceType)
+            switch (inputOptions.VoiceType)
             {
                 case Gender.Male:
                     genderValue = "Male";
@@ -258,12 +256,11 @@ namespace UcmaBotDTMF
                 default:
                     genderValue = "Female";
                     break;
-
             }
 
-            var request = new HttpRequestMessage(HttpMethod.Post, this.inputOptions.RequestUri)
+            var request = new HttpRequestMessage(HttpMethod.Post, inputOptions.RequestUri)
             {
-                Content = new StringContent(String.Format(SsmlTemplate, this.inputOptions.Locale, genderValue, this.inputOptions.VoiceName, this.inputOptions.Text))
+                Content = new StringContent(String.Format(SsmlTemplate, inputOptions.Locale, genderValue, inputOptions.VoiceName, inputOptions.Text))
             };
 
             var httpTask = client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
@@ -277,7 +274,7 @@ namespace UcmaBotDTMF
         /// </summary>
         private void AudioAvailable(GenericEventArgs<Stream> e)
         {
-            EventHandler<GenericEventArgs<Stream>> handler = this.OnAudioAvailable;
+            EventHandler<GenericEventArgs<Stream>> handler = OnAudioAvailable;
             if (handler != null)
             {
                 handler(this, e);
@@ -290,7 +287,7 @@ namespace UcmaBotDTMF
         /// <param name="e">The exception</param>
         private void Error(GenericEventArgs<Exception> e)
         {
-            EventHandler<GenericEventArgs<Exception>> handler = this.OnError;
+            EventHandler<GenericEventArgs<Exception>> handler = OnError;
             if (handler != null)
             {
                 handler(this, e);
@@ -307,10 +304,10 @@ namespace UcmaBotDTMF
             /// </summary>
             public InputOptions()
             {
-                this.Locale = "en-us";
-                this.VoiceName = "Microsoft Server Speech Text to Speech Voice (en-US, ZiraRUS)";
+                Locale = "en-us";
+                VoiceName = "Microsoft Server Speech Text to Speech Voice (en-US, ZiraRUS)";
                 // Default to Riff16Khz16BitMonoPcm output format.
-                this.OutputFormat = AudioOutputFormat.Riff16Khz16BitMonoPcm;
+                OutputFormat = AudioOutputFormat.Riff16Khz16BitMonoPcm;
             }
 
             /// <summary>
@@ -335,7 +332,7 @@ namespace UcmaBotDTMF
 
                     string outputFormat;
 
-                    switch (this.OutputFormat)
+                    switch (OutputFormat)
                     {
                         case AudioOutputFormat.Raw16Khz16BitMonoPcm:
                             outputFormat = "raw-16khz-16bit-mono-pcm";
@@ -356,7 +353,7 @@ namespace UcmaBotDTMF
 
                     toReturn.Add(new KeyValuePair<string, string>("X-Microsoft-OutputFormat", outputFormat));
                     // authorization Header
-                    toReturn.Add(new KeyValuePair<string, string>("Authorization", this.AuthorizationToken));
+                    toReturn.Add(new KeyValuePair<string, string>("Authorization", AuthorizationToken));
                     // Refer to the doc
                     toReturn.Add(new KeyValuePair<string, string>("X-Search-AppId", ConfigurationSettings.AppSettings["bingAppId"]));
                     // Refer to the doc
@@ -366,10 +363,7 @@ namespace UcmaBotDTMF
 
                     return toReturn;
                 }
-                set
-                {
-                    Headers = value;
-                }
+                set { Headers = value; }
             }
 
             /// <summary>
@@ -399,8 +393,20 @@ namespace UcmaBotDTMF
         }
     }
 
-    public class BingTextToSpeechApi 
+    public class BingTextToSpeechApi
     {
+        static Authentication auth;
+
+        public BingTextToSpeechApi()
+        {
+            if (auth == null)
+            {
+                string _subscriptionkey = ConfigurationSettings.AppSettings["subscriptionkey"];
+                // auth = new Authentication("1156d9a3243e4352a4ae5d10cad798c3");
+                auth = new Authentication(_subscriptionkey);
+            }
+        }
+
         /// <summary>
         /// This method is called once the audio returned from the service.
         /// It will then attempt to play that audio file.
@@ -408,8 +414,6 @@ namespace UcmaBotDTMF
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="args">The <see cref="GenericEventArgs{Stream}"/> instance containing the event data.</param>
-       
-
         /// <summary>
         /// Handler an error when a TTS request failed.
         /// </summary>
@@ -417,34 +421,16 @@ namespace UcmaBotDTMF
         /// <param name="e">The <see cref="GenericEventArgs{Exception}"/> instance containing the event data.</param>
         static void ErrorHandler(object sender, GenericEventArgs<Exception> e)
         {
-            Console.WriteLine("Unable to complete the TTS request: [{0}]", e.ToString());
+            Console.WriteLine("Unable to complete the TTS request: [{0}]", e);
         }
 
-        static Authentication auth;
-
-       
-
-        public BingTextToSpeechApi()
+        public HttpResponseMessage Speak(string text)
         {
-            if(auth == null)
-            {
-               
-                string _subscriptionkey =  ConfigurationSettings.AppSettings["subscriptionkey"];
-                // auth = new Authentication("1156d9a3243e4352a4ae5d10cad798c3");
-                auth = new Authentication(_subscriptionkey);
-            }      
-        }
-
-        
-      public HttpResponseMessage Speak(string text)
-        {
-            
             string accessToken;
 
             // Note: The way to get api key:
             // Free: https://www.microsoft.com/cognitive-services/en-us/subscriptions?productId=/products/Bing.Speech.Preview
             // Paid: https://portal.azure.com/#create/Microsoft.CognitiveServices/apitype/Bing.Speech/pricingtier/S0
-           
 
             try
             {
@@ -458,12 +444,10 @@ namespace UcmaBotDTMF
                 Console.WriteLine(ex.Message);
                 return null;
             }
-            
-            
 
             string requestUri = "https://speech.platform.bing.com/synthesize";
 
-            var cortana = new Synthesize(new Synthesize.InputOptions()
+            var cortana = new Synthesize(new Synthesize.InputOptions
             {
                 RequestUri = new Uri(requestUri),
                 // Text to be spoken.
@@ -476,16 +460,12 @@ namespace UcmaBotDTMF
                 VoiceName = "Microsoft Server Speech Text to Speech Voice (en-US, ZiraRUS)",
                 // Service can return audio in different output format. 
                 OutputFormat = AudioOutputFormat.Riff16Khz16BitMonoPcm,
-                AuthorizationToken = "Bearer " + accessToken,
+                AuthorizationToken = "Bearer " + accessToken
             });
 
             var httpSaveResponse = cortana.Speak(CancellationToken.None).Result;
 
             return httpSaveResponse;
-
-           
         }
-
-        
     }
 }

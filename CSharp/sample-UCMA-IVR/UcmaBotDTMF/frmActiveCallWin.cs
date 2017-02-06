@@ -1,25 +1,15 @@
-﻿using Microsoft.Rtc.Collaboration.AudioVideo;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System;
 using System.Configuration;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using UcmaBotDTMF.Common;
-using UcmaBotDTMF.Models;
-using UcmaBotDTMF.Repositories;
 using Microsoft.Rtc.Collaboration;
-using UcmaBotDTMF.Helpers;
+using Microsoft.Rtc.Collaboration.AudioVideo;
+using UcmaBotDtmf.Common;
+using UcmaBotDtmf.Helpers;
+using UcmaBotDtmf.Models;
+using UcmaBotDtmf.Repositories;
 
-namespace UcmaBotDTMF
+namespace UcmaBotDtmf
 {
 
     public enum EndpointStatus

@@ -7,17 +7,12 @@
 using System;
 using System.Configuration;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
-using System.Web;
 using Microsoft.Rtc.Collaboration;
 using Microsoft.Rtc.Signaling;
-using System.Configuration;
 
-
-namespace UcmaBotDTMF
+namespace UcmaBotDtmf.Helpers
 {
     public class UCMASampleHelper
     {
