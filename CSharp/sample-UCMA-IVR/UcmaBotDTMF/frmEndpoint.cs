@@ -153,13 +153,13 @@ namespace UcmaBotDtmf
 
             cmbLanguages.DataSource = languageRep.GetBotLanguages();
 
-            txtDirectlineSecret.Text = ConfigurationSettings.AppSettings["DirectLineSecret"];
+            txtDirectlineSecret.Text = ConfigurationManager.AppSettings["DirectLineSecret"];
 
             endpoint = new LyncUser();
 
             //txtSipUri.Text = endpoint.SipUri + ":" + endpoint.PortNumber;
 
-            txtSipUri.Text = ConfigurationSettings.AppSettings["uri"];
+            txtSipUri.Text = ConfigurationManager.AppSettings["uri"];
 
         }
 

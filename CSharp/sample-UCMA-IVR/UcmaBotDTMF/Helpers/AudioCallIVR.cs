@@ -256,7 +256,7 @@ namespace UcmaBotDtmf.Helpers
              speechSynthesizer.SelectVoice("Microsoft Hazel Desktop"); //slightly more english    
              speechSynthesisConnector.Start();*/
 
-            dataClient = SpeechRecognitionServiceFactory.CreateDataClient(SpeechRecognitionMode.ShortPhrase, MyAppSettings.BotLanguage.Local, ConfigurationSettings.AppSettings["subscriptionkey"]);
+            dataClient = SpeechRecognitionServiceFactory.CreateDataClient(SpeechRecognitionMode.ShortPhrase, MyAppSettings.BotLanguage.Local, ConfigurationManager.AppSettings["subscriptionkey"]);
 
             dataClient.OnResponseReceived += DataClient_OnResponseReceived;
             dataClient.OnConversationError += DataClient_OnConversationError;

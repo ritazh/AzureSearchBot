@@ -355,9 +355,9 @@ namespace UcmaBotDtmf.Common
                     // authorization Header
                     toReturn.Add(new KeyValuePair<string, string>("Authorization", AuthorizationToken));
                     // Refer to the doc
-                    toReturn.Add(new KeyValuePair<string, string>("X-Search-AppId", ConfigurationSettings.AppSettings["bingAppId"]));
+                    toReturn.Add(new KeyValuePair<string, string>("X-Search-AppId", ConfigurationManager.AppSettings["bingAppId"]));
                     // Refer to the doc
-                    toReturn.Add(new KeyValuePair<string, string>("X-Search-ClientID", ConfigurationSettings.AppSettings["bingClientId"]));
+                    toReturn.Add(new KeyValuePair<string, string>("X-Search-ClientID", ConfigurationManager.AppSettings["bingClientId"]));
                     // The software originating the request
                     toReturn.Add(new KeyValuePair<string, string>("User-Agent", "TTSClient"));
 
@@ -401,7 +401,7 @@ namespace UcmaBotDtmf.Common
         {
             if (auth == null)
             {
-                string _subscriptionkey = ConfigurationSettings.AppSettings["subscriptionkey"];
+                string _subscriptionkey = ConfigurationManager.AppSettings["subscriptionkey"];
                 // auth = new Authentication("1156d9a3243e4352a4ae5d10cad798c3");
                 auth = new Authentication(_subscriptionkey);
             }

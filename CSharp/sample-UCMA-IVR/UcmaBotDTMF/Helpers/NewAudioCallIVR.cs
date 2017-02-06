@@ -40,7 +40,7 @@ namespace UcmaBotDtmf.Helpers
 
             player = new Player();
 
-            dataClient = SpeechRecognitionServiceFactory.CreateDataClient(SpeechRecognitionMode.ShortPhrase, MyAppSettings.BotLanguage.Local, ConfigurationSettings.AppSettings["subscriptionkey"]);
+            dataClient = SpeechRecognitionServiceFactory.CreateDataClient(SpeechRecognitionMode.ShortPhrase, MyAppSettings.BotLanguage.Local, ConfigurationManager.AppSettings["subscriptionkey"]);
 
             dataClient.OnResponseReceived += DataClient_OnResponseReceived;
 

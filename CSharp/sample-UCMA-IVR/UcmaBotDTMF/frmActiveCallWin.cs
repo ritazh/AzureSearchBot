@@ -43,7 +43,7 @@ namespace UcmaBotDtmf
         {
             ttsBing.Checked = true;
 
-            MyAppSettings.ProjectTitle = ConfigurationSettings.AppSettings["projectTitle"];
+            MyAppSettings.ProjectTitle = ConfigurationManager.AppSettings["projectTitle"];
 
             this.Text = MyAppSettings.ProjectTitle;
 
@@ -51,7 +51,7 @@ namespace UcmaBotDtmf
 
             languageRep = new LanguageRepository();          
 
-            currentLanguage = languageRep.GetLanguage(ConfigurationSettings.AppSettings["defaultLanguage"]);
+            currentLanguage = languageRep.GetLanguage(ConfigurationManager.AppSettings["defaultLanguage"]);
 
             changeLanguage(currentLanguage);
 

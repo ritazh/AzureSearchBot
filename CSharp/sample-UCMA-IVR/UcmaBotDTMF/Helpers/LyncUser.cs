@@ -19,7 +19,7 @@ namespace UcmaBotDtmf.Helpers
         {
              helper = new UCMASampleHelper();
 
-            var userEndpointSettings = helper.ReadUserSettings(ConfigurationSettings.AppSettings["username"]);
+            var userEndpointSettings = helper.ReadUserSettings(ConfigurationManager.AppSettings["username"]);
 
             userEndpointSettings.AutomaticPresencePublicationEnabled = true;
 

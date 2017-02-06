@@ -41,8 +41,8 @@ namespace UcmaBotDtmf.Helpers
             Activity activity = new Activity();
             activity.ChannelId = "directline";
             activity.Type = ActivityTypes.Message;
-            activity.From = new ChannelAccount(id: ConfigurationSettings.AppSettings["botUser1"]);
-            activity.Recipient = new ChannelAccount(id: ConfigurationSettings.AppSettings["botUser2"]);
+            activity.From = new ChannelAccount(id: ConfigurationManager.AppSettings["botUser1"]);
+            activity.Recipient = new ChannelAccount(id: ConfigurationManager.AppSettings["botUser2"]);
             activity.Conversation = new ConversationAccount(id: conversationid);
             activity.Text = message;
             var output = client.Conversations.PostActivityWithHttpMessagesAsync(conversationid, activity).Result;

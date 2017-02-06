@@ -16,7 +16,7 @@ namespace UcmaBotDtmf.Helpers
         private ApplicationEndpointSettings endpointSettings;
 
         private CollaborationPlatform platform;
-        public int PortNumber => Convert.ToInt32(ConfigurationSettings.AppSettings["appPort"]);
+        public int PortNumber => Convert.ToInt32(ConfigurationManager.AppSettings["appPort"]);
         private string HostName => Dns.GetHostEntry("localhost").HostName;
         public string SipUri => $"sip:default@{HostName}";
 

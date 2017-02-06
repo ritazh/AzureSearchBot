@@ -12,7 +12,7 @@ namespace UcmaBotDtmf.Helpers
         public AmazonText2Speech()
         {
             
-            var credentials = new BasicAWSCredentials(ConfigurationSettings.AppSettings["accesskey"], ConfigurationSettings.AppSettings["secretkey"]);
+            var credentials = new BasicAWSCredentials(ConfigurationManager.AppSettings["accesskey"], ConfigurationManager.AppSettings["secretkey"]);
             amazonPolicyClient = new AmazonPollyClient(credentials);
         }
         public SynthesizeSpeechResponse Speak(string text)
