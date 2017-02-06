@@ -3,7 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UcmaBotDTMF", "UcmaBotDTMF\UcmaBotDTMF.csproj", "{C75D812C-750F-4851-8D42-A8E092E41FB8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UcmaBotDtmf", "UcmaBotDTMF\UcmaBotDtmf.csproj", "{C75D812C-750F-4851-8D42-A8E092E41FB8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3C6EBA8F-FF98-43F2-A63E-88EC819F2DAF}"
+	ProjectSection(SolutionItems) = preProject
+		Readme.md = Readme.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{2A3FA844-0AB4-4A30-B0B9-96EA56ED15CF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +25,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2A3FA844-0AB4-4A30-B0B9-96EA56ED15CF} = {3C6EBA8F-FF98-43F2-A63E-88EC819F2DAF}
 	EndGlobalSection
 EndGlobal
