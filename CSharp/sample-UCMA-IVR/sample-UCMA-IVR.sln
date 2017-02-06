@@ -14,14 +14,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{2A3FA844-0
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C75D812C-750F-4851-8D42-A8E092E41FB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C75D812C-750F-4851-8D42-A8E092E41FB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C75D812C-750F-4851-8D42-A8E092E41FB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C75D812C-750F-4851-8D42-A8E092E41FB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C75D812C-750F-4851-8D42-A8E092E41FB8}.Debug|x64.ActiveCfg = Debug|x64
+		{C75D812C-750F-4851-8D42-A8E092E41FB8}.Debug|x64.Build.0 = Debug|x64
+		{C75D812C-750F-4851-8D42-A8E092E41FB8}.Release|x64.ActiveCfg = Release|x64
+		{C75D812C-750F-4851-8D42-A8E092E41FB8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
