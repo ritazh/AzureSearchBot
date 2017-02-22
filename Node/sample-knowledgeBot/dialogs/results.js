@@ -2,13 +2,13 @@ module.exports = function () {
     bot.dialog('/showResults', [
         function (session, args) {
             var msg = new builder.Message(session).attachmentLayout(builder.AttachmentLayout.carousel);
-                args.result['value'].forEach(function (musician, i) {
+                args.result['value'].forEach(function (question, i) {
                     msg.addAttachment(
                         new builder.HeroCard(session)
-                            .title(musician.Name)
-                            .subtitle("Era: " + musician.Era + " | " + "Search Score: " + musician['@search.score'])
-                            .text(musician.Description)
-                            .images([builder.CardImage.create(session, musician.imageURL)])
+                            .title(question.Name)
+                            .subtitle("Product: " + question.Product + " | " + "Search Score: " + question['@search.score'])
+                            .text(question.Description)
+                            //.images([builder.CardImage.create(session, question.imageURL)])
                     );
                 })
                 session.endDialog(msg);

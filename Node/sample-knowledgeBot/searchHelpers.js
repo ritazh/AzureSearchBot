@@ -7,6 +7,7 @@ module.exports = function () {
 
     global.performSearchQuery = function (queryString, callback) {
         request(queryString, function (error, response, body) {
+            
             if (!error && response && response.statusCode == 200) {
                 var result = JSON.parse(body);
                 callback(null, result);

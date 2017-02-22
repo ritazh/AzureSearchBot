@@ -2,6 +2,7 @@
 require('./connectorSetup.js')();
 require('./searchHelpers.js')();
 require('./dialogs/results.js')(); 
+require('./dialogs/askQuestion.js')();
 require('./dialogs/musicianExplorer.js')();
 require('./dialogs/musicianSearch.js')();
 
@@ -17,19 +18,19 @@ bot.dialog('/', [
 
 bot.dialog('/promptButtons', [
     function (session) {
-        var choices = ["Musician Explorer", "Musician Search"]
-        builder.Prompts.choice(session, "How would you like to explore the classical music bot?", choices);
+        var choices = ["Ask a question", "Talk to a representative"]
+        builder.Prompts.choice(session, "What would you like to do?", choices);
     },
     function (session, results) {
         if (results.response) {
             var selection = results.response.entity;
             // route to corresponding dialogs
             switch (selection) {
-                case "Musician Explorer":
-                    session.replaceDialog('/musicianExplorer');
+                case "Ask a question":
+                    session.replaceDialog('/askQuestion');
                     break;
-                case "Musician Search":
-                    session.replaceDialog('/musicianSearch');
+                case "Talk to a representative":
+                    session.send("Let me connect you...");
                     break;
                 default:
                     session.reset('/');
